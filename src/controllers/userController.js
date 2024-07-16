@@ -1,6 +1,5 @@
 import userService from "../services/userService";
 const cloudinary = require("cloudinary").v2;
-import { refreshTokenService } from "../services/jwtSerivce";
 require("dotenv").config();
 
 let handleCreateNewUser = async (req, res) => {
@@ -54,8 +53,22 @@ let handleLogin = async (req, res) => {
   try {
     let data = req.body;
     let message = await userService.loginService(data.email, data.password);
-    if (message.errCode === 0) return res.status(200).json(message);
-    else return res.status(400).json(message);
+    if (message.errCode === 0) {
+      let { access_token, refresh_token } = message;
+      res.cookie("access_token", access_token, {
+        httpOnly: true,
+        secure: false,
+        path: "/",
+        sameSite: "strict",
+      });
+      res.cookie("refresh_token", refresh_token, {
+        httpOnly: true,
+        secure: false,
+        path: "/",
+        sameSite: "strict",
+      });
+      return res.status(200).json(message);
+    } else return res.status(400).json(message);
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -71,24 +84,6 @@ let handleGetUserInfor = async (req, res) => {
     let message = await userService.getUserInforService(userId);
     if (message.errCode === 0) return res.status(200).json(message);
     else return res.status(400).json(message);
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      errCode: -1,
-      message: "Error from the server!!!",
-    });
-  }
-};
-
-let handleRefreshToken = async (req, res) => {
-  try {
-    let token = req.headers.authorization.split(" ")[1];
-    let message = await refreshTokenService(token);
-    if (message.errCode === 0) {
-      return res.status(200).json(message);
-    } else {
-      return res.status(400).json(message);
-    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -243,5 +238,4 @@ module.exports = {
   handleChangeProfilePassword,
   handleGetAllRole,
   handleGetUserInfor,
-  handleRefreshToken,
 };

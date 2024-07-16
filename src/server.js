@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import initWebRoutes from "./routes";
 import connectDB from "./config/connectDB";
 import cors from "cors";
@@ -14,9 +15,10 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
-
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
+
+app.use(cookieParser());
 
 initWebRoutes(app);
 connectDB();
