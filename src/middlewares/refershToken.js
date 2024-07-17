@@ -1,5 +1,5 @@
 import { refreshTokenService } from "../services/jwtSerivce";
-import { jwtDecode } from "jwt-decode";
+import jwt from "jsonwebtoken";
 
 const refreshToken = async (req, res, next) => {
   try {
@@ -10,33 +10,43 @@ const refreshToken = async (req, res, next) => {
     console.log("refresh_token: ", refresh_token);
 
     if (refresh_token && access_token) {
-      const decodedAccess = jwtDecode(access_token);
-      const decodedRefreshToken = jwtDecode(refresh_token);
-      const currentTime = new Date();
-      if (decodedAccess?.exp < currentTime.getTime() / 1000) {
-        if (decodedRefreshToken?.exp > currentTime.getTime() / 1000) {
-          let result = await refreshTokenService(refresh_token);
-          if (result.errCode === 0) {
-            res.cookie("access_token", result.access_token, {
-              httpOnly: true,
-              secure: true,
-              path: "/",
-              sameSite: "None",
-            });
-            req.cookies.access_token = result.access_token;
-            next();
-          } else {
-            return res.status(400).json(result);
-          }
-        } else {
+      jwt.verify(access_token, process.env.ACCESS_KEY, (err, decodedAccess) => {
+        if (err && err.name === "TokenExpiredError") {
+          jwt.verify(
+            refresh_token,
+            process.env.REFRESH_KEY,
+            async (err, decodedRefreshToken) => {
+              if (err) {
+                return res.status(400).json({
+                  errCode: -4,
+                  message: "Refresh_token expired",
+                });
+              }
+
+              let result = await refreshTokenService(refresh_token);
+              if (result.errCode === 0) {
+                res.cookie("access_token", result.access_token, {
+                  httpOnly: true,
+                  secure: true,
+                  path: "/",
+                  sameSite: "None",
+                });
+                req.cookies.access_token = result.access_token;
+                next();
+              } else {
+                return res.status(400).json(result);
+              }
+            }
+          );
+        } else if (err) {
           return res.status(400).json({
-            errCode: -4,
-            message: "Refresh_token expired",
+            errCode: -3,
+            message: "Invalid access token",
           });
+        } else {
+          next();
         }
-      } else {
-        next();
-      }
+      });
     } else {
       return res.status(400).json({
         errCode: -3,
