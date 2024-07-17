@@ -6,6 +6,9 @@ const refreshToken = async (req, res, next) => {
     const refresh_token = req.cookies.refresh_token;
     const access_token = req.cookies.access_token;
 
+    console.log("access_token: ", access_token);
+    console.log("refresh_token: ", refresh_token);
+
     if (refresh_token && access_token) {
       const decodedAccess = jwtDecode(access_token);
       const decodedRefreshToken = jwtDecode(refresh_token);
