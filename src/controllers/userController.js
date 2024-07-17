@@ -59,13 +59,13 @@ let handleLogin = async (req, res) => {
         httpOnly: true,
         secure: true,
         path: "/",
-        sameSite: "strict",
+        sameSite: "None",
       });
       res.cookie("refresh_token", refresh_token, {
         httpOnly: true,
         secure: true,
         path: "/",
-        sameSite: "strict",
+        sameSite: "None",
       });
       return res.status(200).json(message);
     } else return res.status(400).json(message);

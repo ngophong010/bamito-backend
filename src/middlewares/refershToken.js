@@ -18,7 +18,7 @@ const refreshToken = async (req, res, next) => {
               httpOnly: true,
               secure: true,
               path: "/",
-              sameSite: "strict",
+              sameSite: "None",
             });
             req.cookies.access_token = result.access_token;
             next();
