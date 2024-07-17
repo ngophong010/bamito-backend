@@ -57,13 +57,13 @@ let handleLogin = async (req, res) => {
       let { access_token, refresh_token } = message;
       res.cookie("access_token", access_token, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         path: "/",
         sameSite: "strict",
       });
       res.cookie("refresh_token", refresh_token, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         path: "/",
         sameSite: "strict",
       });

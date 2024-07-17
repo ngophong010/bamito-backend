@@ -5,6 +5,7 @@ const refreshToken = async (req, res, next) => {
   try {
     const refresh_token = req.cookies.refresh_token;
     const access_token = req.cookies.access_token;
+
     if (refresh_token && access_token) {
       const decodedAccess = jwtDecode(access_token);
       const decodedRefreshToken = jwtDecode(refresh_token);
@@ -15,7 +16,7 @@ const refreshToken = async (req, res, next) => {
           if (result.errCode === 0) {
             res.cookie("access_token", result.access_token, {
               httpOnly: true,
-              secure: false,
+              secure: true,
               path: "/",
               sameSite: "strict",
             });
