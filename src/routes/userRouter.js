@@ -59,4 +59,10 @@ router.get(
   authAdmin,
   userController.handleGetAllRole
 );
+router.get(
+  "/check-email",
+  refreshToken,
+  authAdmin,
+  userController.handleCheckEmail
+);
 export default router;

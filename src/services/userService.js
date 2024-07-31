@@ -855,4 +855,5 @@ module.exports = {
   registerService,
   autherRegister,
   getUserInforService,
+  checkEmailUser
 };
