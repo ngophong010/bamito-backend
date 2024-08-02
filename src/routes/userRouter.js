@@ -59,4 +59,8 @@ router.get(
   authAdmin,
   userController.handleGetAllRole
 );
+router.post(
+  "/send-sms",
+  userController.handleSendSMSOtpCode
+);
 export default router;

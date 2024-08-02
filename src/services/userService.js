@@ -7,6 +7,7 @@ const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
 import { v4 as uuidv4 } from "uuid";
 const salt = bcrypt.genSaltSync(10);
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 let checkEmailUser = (email) => {
   return new Promise(async (resolve, reject) => {
@@ -267,6 +268,7 @@ let checkEmailUserResgister = (email) => {
   });
 };
 
+
 let registerService = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -354,6 +356,50 @@ let autherRegister = (token) => {
     }
   });
 };
+
+function generateOTP(length) {
+  let otp = '';
+  for (let i = 0; i < length; i++) {
+    otp += Math.floor(Math.random() * 10);
+  }
+  return otp;
+}
+
+let handleSendSMSOtpCodeService = async (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const otp = generateOTP(6);
+      let user = await db.User.findOne({
+        where: { id: id },
+        raw: false,
+      });
+      let phone = await user?.phoneNumber?.substring(1);
+
+      const res = await client.messages
+        .create({
+          body: `Your verification code is: ${otp}`,
+          from: '+16812488858',
+          to: `+84${phone}`
+        })
+
+      if (res.errorCode !== null) {
+        resolve({
+          errCode: 1,
+          message: "Send sms failed!!!",
+        });
+      }
+      user.otpCode = otp;
+      user.timeOtp = new Date().getTime() + 180 * 1000;
+      await user.save();
+      resolve({
+        errCode: 0,
+        message: "Send otp sms successfully!!!",
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
 
 let sendOtpCodeService = (email) => {
   return new Promise(async (resolve, reject) => {
@@ -684,7 +730,6 @@ let getUserService = (id) => {
             exclude: [
               "password",
               "avatarId",
-              "otpCode",
               "timeOtp",
               "roleId",
               "tokenResgister",
@@ -855,4 +900,5 @@ module.exports = {
   registerService,
   autherRegister,
   getUserInforService,
+  handleSendSMSOtpCodeService
 };
