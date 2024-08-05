@@ -2,6 +2,32 @@ import db from "../models/index";
 require("dotenv").config();
 import { Op } from "sequelize";
 
+let getProductTypeService = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let productType = await db.Product_Type.findOne({
+        where: {
+          productTypeId: id,
+          // attributes: {
+          //   exclude: ["createdAt", "updatedAt"],
+          // },
+        },
+      });
+      if (productType) {
+        resolve({
+          errCode: 0,
+          message: "success",
+          data: productType,
+        });
+      } else {
+        resolve("Not found product type");
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 let checkProductTypeId = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -281,4 +307,5 @@ module.exports = {
   deleteProductTypeService,
   updateProductTypeService,
   getAllProductTypeService,
+  getProductTypeService
 };

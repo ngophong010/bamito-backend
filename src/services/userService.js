@@ -901,4 +901,5 @@ module.exports = {
   autherRegister,
   getUserInforService,
   handleSendSMSOtpCodeService
+  checkEmailUser
 };

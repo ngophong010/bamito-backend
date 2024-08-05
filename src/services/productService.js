@@ -469,7 +469,7 @@ let getProductService = (productId) => {
               "brandId",
               "productTypeId",
               "imageId",
-              "descriptionContent",
+              // "descriptionContent",
             ],
           },
           include: [
