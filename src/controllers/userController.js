@@ -145,7 +145,7 @@ let handleSendSMSOtpCode = async (req, res) => {
       message: "Error from the server!!!",
     });
   }
-}
+};
 
 let handleChangePassword = async (req, res) => {
   try {
@@ -277,6 +277,6 @@ module.exports = {
   handleChangeProfilePassword,
   handleGetAllRole,
   handleGetUserInfor,
-  handleSendSMSOtpCode
+  handleSendSMSOtpCode,
   handleCheckEmail,
 };

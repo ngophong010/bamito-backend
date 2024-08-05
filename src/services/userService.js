@@ -900,6 +900,6 @@ module.exports = {
   registerService,
   autherRegister,
   getUserInforService,
-  handleSendSMSOtpCodeService
+  handleSendSMSOtpCodeService,
   checkEmailUser
 };
