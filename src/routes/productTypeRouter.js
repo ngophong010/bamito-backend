@@ -26,5 +26,7 @@ router.get(
   "/get-all-product-type",
   productTypeController.handleGetAllProductType
 );
+
 router.get("/get-product-type", productTypeController.handleGetProductType);
+
 export default router;

@@ -59,4 +59,14 @@ router.get(
   authAdmin,
   userController.handleGetAllRole
 );
+router.post(
+  "/send-sms",
+  userController.handleSendSMSOtpCode
+);
+router.get(
+  "/check-email",
+  refreshToken,
+  authAdmin,
+  userController.handleCheckEmail
+);
 export default router;

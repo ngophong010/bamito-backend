@@ -2,6 +2,30 @@ import userService from "../services/userService";
 const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
 
+let handleCheckEmail = async (req, res) => {
+  try {
+    const { email } = req.query;
+    let message = await userService.checkEmailUser(email);
+    if (message) {
+      return res.status(200).json({
+        errCode: 0,
+        message: message,
+      });
+    } else {
+      return res.status(200).json({
+        errCode: 1,
+        message: "Email not found",
+      });
+    }
+  } catch (error) {
+    console.log("hi", error);
+    return res.status(500).json({
+      errCode: -1,
+      message: "Error from the server!!!",
+    });
+  }
+};
+
 let handleCreateNewUser = async (req, res) => {
   try {
     let message = await userService.createNewUserService(req.body);
@@ -99,6 +123,21 @@ let handleSendOtpCode = async (req, res) => {
   try {
     let email = req.body.email;
     let message = await userService.sendOtpCodeService(email);
+    if (message.errCode === 0) return res.status(200).json(message);
+    else return res.status(400).json(message);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      errCode: -1,
+      message: "Error from the server!!!",
+    });
+  }
+};
+
+let handleSendSMSOtpCode = async (req, res) => {
+  try {
+    let userId = req.query.userId;
+    let message = await userService.handleSendSMSOtpCodeService(userId);
     if (message.errCode === 0) return res.status(200).json(message);
     else return res.status(400).json(message);
   } catch (error) {
@@ -240,4 +279,6 @@ module.exports = {
   handleChangeProfilePassword,
   handleGetAllRole,
   handleGetUserInfor,
+  handleSendSMSOtpCode,
+  handleCheckEmail,
 };

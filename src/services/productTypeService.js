@@ -1,6 +1,6 @@
 import db from "../models/index";
 require("dotenv").config();
-import { Op, where } from "sequelize";
+import { Op } from "sequelize";
 
 let checkProductTypeId = (id) => {
   return new Promise(async (resolve, reject) => {
