@@ -7,7 +7,7 @@ export const generalAccessToken = (payload) => {
       ...payload,
     },
     process.env.ACCESS_KEY,
-    { expiresIn: "300s" }
+    { expiresIn: process.env.ACCESS_TIME }
   );
 
   return accessToken;
@@ -19,7 +19,7 @@ export const generalRefreshToken = (payload) => {
       ...payload,
     },
     process.env.REFRESH_KEY,
-    { expiresIn: "1d" }
+    { expiresIn: process.env.REFRESH_TIME }
   );
 
   return refreshToken;

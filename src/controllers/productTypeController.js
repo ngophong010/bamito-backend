@@ -66,11 +66,25 @@ let handleGetAllProductType = async (req, res) => {
   }
 };
 
+let handleGetProductType = async (req, res) => {
+  try {
+    let { productTypeId } = req.query;
+    let message = await productTypeService.getProductTypeService(productTypeId);
+    if (message.errCode === 0) return res.status(200).json(message);
+    else return res.status(400).json(message);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      errCode: -1,
+      message: "Error from the server!!!",
+    });
+  }
+};
+
 module.exports = {
   handleCreateNewProductType,
   handleDeleteProductType,
   handleUpdateProductType,
   handleGetAllProductType,
+  handleGetProductType,
 };
-
-// so trigger curron tran

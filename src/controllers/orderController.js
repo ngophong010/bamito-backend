@@ -277,7 +277,7 @@ let handelVnPayReturn = async (req, res) => {
       });
       if (message.errCode === 0)
         return res.redirect(
-          `${process.env.URL_REACT}/user/orders/${message?.orderId}`
+          `${process.env.URL_CLIENT}/user/orders/${message?.orderId}`
         );
       else return res.status(400).json(message);
     }

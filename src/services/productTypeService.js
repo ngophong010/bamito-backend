@@ -1,6 +1,6 @@
 import db from "../models/index";
 require("dotenv").config();
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 
 let checkProductTypeId = (id) => {
   return new Promise(async (resolve, reject) => {
@@ -257,28 +257,44 @@ let getAllProductTypeService = (limit, page, sort, name, pagination) => {
   });
 };
 
-// let getAllProductTypeService = (limit, page) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       let productTypes = await db.Product_Type.findAll({
-//         attributes: {
-//           exclude: ["createdAt", "updatedAt"],
-//         },
-//       });
-//       resolve({
-//         errCode: 0,
-//         data: productTypes,
-//         message: "Get all productType succeed",
-//       });
-//     } catch (error) {
-//       reject(error);
-//     }
-//   });
-// };
+let getProductTypeService = (productTypeId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!productTypeId) {
+        resolve({
+          errCode: 1,
+          message: "Missing required parameter!!!",
+        });
+      } else {
+        let productType = await db.Product_Type.findOne({
+          where: { productTypeId: productTypeId },
+          attributes: {
+            exclude: ["id", "createdAt", "updatedAt"],
+          },
+        });
+        if (!productType) {
+          resolve({
+            errCode: 2,
+            message: "Product type isn't exist",
+          });
+        } else {
+          resolve({
+            errCode: 0,
+            data: productType,
+            message: "Get productType succeed",
+          });
+        }
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 
 module.exports = {
   createNewProductTypeService,
   deleteProductTypeService,
   updateProductTypeService,
   getAllProductTypeService,
+  getProductTypeService,
 };

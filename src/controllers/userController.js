@@ -41,11 +41,11 @@ let handleAuthenRegister = async (req, res) => {
     let token = req.query.token;
     let message = await userService.autherRegister(token);
     if (message.errCode === 0)
-      return res.redirect(`${process.env.URL_REACT}/login`);
-    else return res.redirect(`${process.env.URL_REACT}/not-found`);
+      return res.redirect(`${process.env.URL_CLIENT}/login`);
+    else return res.redirect(`${process.env.URL_CLIENT}/not-found`);
   } catch (error) {
     console.log(error);
-    res.redirect(`${process.env.URL_REACT}/not-found`);
+    res.redirect(`${process.env.URL_CLIENT}/not-found`);
   }
 };
 
@@ -59,13 +59,15 @@ let handleLogin = async (req, res) => {
         httpOnly: true,
         secure: true,
         path: "/",
-        sameSite: "None",
+        // sameSite: "None",
+        sameSite: "Lax",
       });
       res.cookie("refresh_token", refresh_token, {
         httpOnly: true,
         secure: true,
         path: "/",
-        sameSite: "None",
+        // sameSite: "None",
+        sameSite: "Lax",
       });
       return res.status(200).json(message);
     } else return res.status(400).json(message);
