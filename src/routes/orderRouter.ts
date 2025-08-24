@@ -16,7 +16,7 @@ const createOrderValidation = [
   body('cartItems').isArray({ min: 1 }),
   body('cartItems.*.productId').isNumeric(),
   body('cartItems.*.sizeId').isNumeric(),
-  body('cartItems.*.quantity').isNumeric({ min: 1 }),
+  body('cartItems.*.quantity').isInt({ min: 1 }),
 ];
 
 const updateStatusValidation = [
