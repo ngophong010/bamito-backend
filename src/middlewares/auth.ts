@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import asyncHandler from 'express-async-handler';
 import db from "../models/index.js";
+import * as jwtService from "../services/jwtService.js";
 
 // --- TYPES (from our custom.d.ts) ---
 interface JwtPayload {
@@ -38,6 +39,37 @@ export const protect = asyncHandler(async (req: Request, res: Response, next: Ne
     next(); // User is authenticated, proceed to the next step.
   } catch (error) {
     res.status(401).json({ message: "Not authorized, token failed." });
+  }
+});
+
+/**
+ * @desc    Generate a new access token using a refresh token.
+ * @route   POST /api/auth/refresh-token
+ * @access  Public (but requires a valid refresh token cookie)
+ */
+export const handleRefreshToken = asyncHandler(async (req: Request, res: Response) => {
+  const refresh_token = req.cookies.refresh_token;
+
+  if (!refresh_token) {
+    res.status(401).json({ message: "Not authorized, no refresh token provided." });
+    return;
+  }
+
+  // The refactored service now handles the logic cleanly.
+  const message = await jwtService.refreshTokenService(refresh_token);
+
+  if (message.errCode === 0) {
+    // Set the new access token in a secure cookie
+    res.cookie("access_token", message.data.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: "/",
+      sameSite: "lax",
+    });
+    res.status(200).json({ message: "Access token refreshed successfully." });
+  } else {
+    // If the refresh token is invalid/expired, send a forbidden status
+    res.status(403).json(message);
   }
 });
 
