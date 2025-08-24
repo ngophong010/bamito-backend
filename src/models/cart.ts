@@ -19,7 +19,6 @@ export class Cart extends Model<CartAtrributes, CartCreationAttributes> implemen
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-git 
   public getUser!: BelongsToGetAssociationMixin<User>;
   public getCartDetails!: HasManyGetAssociationsMixin<CartDetail>;
 
