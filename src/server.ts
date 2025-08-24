@@ -3,15 +3,29 @@ import type {Application, Request, Response, NextFunction} from "express";
 
 import cookieParser from "cookie-parser";
 import apiRouter from "./routes/index.js";
-import connectDB from "./config/connectDB.js";
+import {connectDB} from "./config/connectDB.js";
 import cors from "cors";
 import type {CorsOptions} from "cors";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import { validateEnv } from "./config/env.js";
 
 dotenv.config();
 
+const requiredEnv = [
+  'DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_DATABASE',
+  'ACCESS_KEY', 'REFRESH_KEY', 'CLOUDINARY_CLOUD_NAME', // Add ALL essential variables
+];
+
+for (const variable of requiredEnv) {
+  if (!process.env[variable]) {
+    // If a variable is missing, throw a clear error and crash the app immediately.
+    throw new Error(`FATAL ERROR: Environment variable ${variable} is not defined.`);
+  }
+}
+
+validateEnv();
 const app: Application = express();
 
 // 1. Set security HTTP headers
@@ -47,16 +61,6 @@ app.use('/api', limiter);
 // 6. Mount the master router for all API endpoints
 app.use("/api", apiRouter);
 
-// --- DATABASE & SERVER STARTUP ---
-
-connectDB();
-
-const port = process.env.PORT || 8080;
-
-app.listen(port, () => {
-  console.log(`Backend nodejs is running on the port: ${port}`);
-});
-
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   // res.status(500).send("Something broke!");
@@ -71,3 +75,24 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
   });
 });
+
+// --- DATABASE & SERVER STARTUP ---
+
+const port = process.env.PORT || 8080;
+
+const startServer = async () => {
+  try {
+    // Connect to the database
+    await connectDB();
+
+    // Start the server
+    app.listen(port, () => {
+      console.log(`🚀 Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start the server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
