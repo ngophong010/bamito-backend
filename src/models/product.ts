@@ -74,6 +74,16 @@ export class Product extends Model<ProductAttributes, ProductCreationAttributes>
       otherKey: "sizeId",          // The key in ProductSize that points to Size
       as: "sizes",                 // The alias to use when querying
     });
+    Product.belongsToMany(models.User, {
+      through: models.Favourite,
+      foreignKey: "productId",
+      otherKey: "userId",
+      as: "favouritedByUsers",
+    });
+    Product.hasMany(models.Feedback, {
+      foreignKey: "productId",
+      as: "feedbacks",
+    });
   }
 }
 
