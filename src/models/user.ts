@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, Model } from "sequelize";
-import type {Optional, HasManyGetAssociationsMixin, BelongsToGetAssociationMixin} from "sequelize";
+import type { Optional, HasManyGetAssociationsMixin, BelongsToGetAssociationMixin } from "sequelize";
 import type { Role } from "./role.js";
 import type { Order } from "./order.js";
 import type { Models } from "./index.js";
@@ -41,7 +41,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  
+
   public getRoleData!: BelongsToGetAssociationMixin<Role>;
   public getOrders!: HasManyGetAssociationsMixin<Order>;
 
@@ -52,6 +52,12 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
 
   public static associate(models: Models) {
     User.belongsTo(models.Role, { foreignKey: "roleId", targetKey: "id", as: "roleData" });
+    User.belongsToMany(models.Product, {
+      through: models.Favourite, // This is the join table
+      foreignKey: "userId",
+      otherKey: "productId",
+      as: "favouriteProducts", // A clear alias
+    });
     User.hasMany(models.Order, { foreignKey: "userId", as: "orders" });
     // ... other associations like hasOne Cart, hasMany Feedbacks
   }
