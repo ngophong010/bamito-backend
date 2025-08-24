@@ -10,6 +10,7 @@ roleName: string;
 }
 
 type RoleCreationAttributes = Optional<RoleAttributes, "id">;
+
 export class Role extends Model<RoleAttributes, RoleCreationAttributes> implements RoleAttributes {
   public id!: number;
   public roleId!: string;
@@ -27,6 +28,7 @@ export class Role extends Model<RoleAttributes, RoleCreationAttributes> implemen
     });
   }
 }
+
 export default function (sequelize: Sequelize): typeof Role {
   Role.init({
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
