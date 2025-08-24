@@ -1,4 +1,5 @@
-import { Sequelize, DataTypes, Model, Optional } from "sequelize";
+import { Sequelize, DataTypes, Model } from "sequelize";
+import type {Optional} from "sequelize";
 import type { Models } from "./index.js";
 
 // This is a simple join table model.
