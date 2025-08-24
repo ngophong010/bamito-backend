@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, Model } from "sequelize";
 import type { Optional, HasManyGetAssociationsMixin, BelongsToGetAssociationMixin } from "sequelize";
-import type { CartDetail } from "./cart_detail.js";
+import type { CartDetail } from "./cartDetail.js";
 import type { User } from "./user.js"
 import type {Models} from "./index.js"
 
@@ -19,7 +19,7 @@ export class Cart extends Model<CartAtrributes, CartCreationAttributes> implemen
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-
+git 
   public getUser!: BelongsToGetAssociationMixin<User>;
   public getCartDetails!: HasManyGetAssociationsMixin<CartDetail>;
 
