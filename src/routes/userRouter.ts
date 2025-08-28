@@ -2,16 +2,9 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 import rateLimit from "express-rate-limit";
 
-// ENHANCEMENT 1: Import the correct controller functions (named exports)
 import * as userController from "../controllers/userController.js";
-import * as authController from "../controllers/authController.js"
-
-// ENHANCEMENT 2: Import the new, standardized auth middleware
 import { protect, isAdmin, isOwnerOrAdmin } from "../middlewares/auth.js";
-
 import { uploadImage } from "../middlewares/uploadImage.js";
-// Note: `refreshToken` is likely part of your login/logout flow, not a general middleware.
-// We will create a dedicated endpoint for it.
 
 const router = express.Router();
 
@@ -23,16 +16,40 @@ const authLimiter = rateLimit({
   message: { errCode: 429, message: "Too many authentication attempts. Please try again in 15 minutes." },
 });
 
-// --- Validation Chains ---
-const registerValidation = [
-  body('email', 'A valid email is required').isEmail().normalizeEmail(),
-  body('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
-  body('userName', 'User name is required').not().isEmpty().trim(),
+// ===============================================================
+// --- VALIDATION CHAINS ---
+// ===============================================================
+// Note: registerValidation and loginValidation have been moved to authRouter.ts
+
+const createUserValidation = [
+  body('email', 'A valid email is required')
+    .exists().withMessage('Email is required')
+    .isEmail().withMessage('Invalid email format')
+    .normalizeEmail(),
+  
+  body('password', 'Password must be at least 6 characters long')
+    .exists().withMessage('Password is required')
+    .isLength({ min: 6 }),
+  
+  body('userName', 'User name is required')
+    .exists().withMessage('User name is required')
+    .not().isEmpty()
+    .trim(),
+  
+  body('role', 'Invalid role')
+    .optional()
+    .isIn(['user', 'admin']), // adjust if you have more roles
 ];
 
-const loginValidation = [
-  body('email', 'A valid email is required').isEmail().normalizeEmail(),
-  body('password', 'Password is required').not().isEmpty(),
+const updateUserValidation = [
+    body('email', 'A valid email is required').optional().isEmail().normalizeEmail(),
+    body('userName', 'User name is required').optional().not().isEmpty().trim(),
+    // Add other fields an admin or user can update
+];
+
+const changePasswordValidation = [
+    body('currentPassword', 'Current password is required').not().isEmpty(),
+    body('newPassword', 'New password must be at least 6 characters').isLength({ min: 6 }),
 ];
 
 const idParamValidation = [
@@ -40,38 +57,44 @@ const idParamValidation = [
 ];
 
 // ===============================================================
-// --- PUBLIC ROUTES (No Auth Required) ---
+// --- USER PROFILE ROUTES (Actions on your OWN account) ---
 // ===============================================================
+// All routes in this section require the user to be logged in (`protect`).
 
-// A dedicated route for refreshing the access token
-// router.post("/token/refresh", userController.handleRefreshToken); // You would create this controller
-
-// ===============================================================
-// --- USER PROFILE ROUTES (Requires Login) ---
-// ===============================================================
-// A single route group for actions related to the authenticated user's own profile.
 router.route("/profile")
+    /**
+     * @route   GET /api/v1/users/profile
+     * @desc    Get the profile of the currently logged-in user
+     * @access  Private (User)
+     */
     .get(protect, userController.handleGetUserInfor)
-    .put(protect, uploadImage.single('avatar'), userController.handleUpdateUser);
+    /**
+     * @route   PUT /api/v1/users/profile
+     * @desc    Update the profile of the currently logged-in user
+     * @access  Private (User)
+     */
+    .put(protect, uploadImage.single('avatar'), updateUserValidation, userController.handleUpdateUser);
 
-router.put("/profile/change-password", protect, [/* validation */], userController.handleChangeProfilePassword);
-
+router.put(
+    "/profile/change-password",
+    protect,
+    changePasswordValidation,
+    userController.handleChangeProfilePassword
+);
 
 // ===============================================================
-// --- ADMIN-ONLY ROUTES ---
+// --- ADMIN-ONLY ROUTES (Actions on ANY user) ---
 // ===============================================================
-// A route group for admin actions on the collection of all users
+// All routes in this section require the user to be an Admin (`isAdmin`).
+
 router.route("/")
     .get(protect, isAdmin, userController.handleGetAllUser)
-    .post(protect, isAdmin, registerValidation, userController.handleCreateNewUser);
+    .post(protect, isAdmin, createUserValidation, userController.handleCreateNewUser);
 
-// A route group for admin actions on a SINGLE user
 router.route("/:id")
-    .get(protect, isAdmin, idParamValidation, userController.handleGetUser) // Admins can get any user by ID
-    .put(protect, isAdmin, uploadImage.single('avatar'), idParamValidation, userController.handleUpdateUser) // Admins can update any user
-    .delete(protect, isAdmin, idParamValidation, userController.handleDeleteUser); // Admins can delete any user
+    .get(protect, isAdmin, idParamValidation, userController.handleGetUser)
+    .put(protect, isAdmin, uploadImage.single('avatar'), idParamValidation, updateUserValidation, userController.handleUpdateUser)
+    .delete(protect, isAdmin, idParamValidation, userController.handleDeleteUser);
 
-// This doesn't really belong to the user resource. It's better in its own router.
-// router.get("/roles/all", protect, isAdmin, userController.handleGetAllRole);
-
+router.get("/roles/all", protect, isAdmin, userController.handleGetAllRole);
 export default router;
