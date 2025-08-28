@@ -3,22 +3,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // ENHANCEMENT 2: Use the consistent, lowercase table name.
     await queryInterface.createTable("favourites", {
-      // ENHANCEMENT 1: 'id' is the single, integer primary key for performance.
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
-      // Foreign keys are now both efficient INTEGERS
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "users", // lowercase table name
-          key: "id",    // integer primary key
+          model: "users",
+          key: "id",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
@@ -27,8 +24,8 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "products", // lowercase table name
-          key: "id",       // integer primary key
+          model: "products",
+          key: "id",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
@@ -43,9 +40,8 @@ module.exports = {
       },
     });
 
-    // ENHANCEMENT 1 (Part 2): Apply the business rule as a UNIQUE constraint.
-    // This enforces "one favourite per user per product" while keeping the
-    // primary key simple and performant.
+    // Apply the business rule as a UNIQUE constraint enforces "one favourite per user per product"
+    // while keeping the primary key simple and performant.
     await queryInterface.addConstraint("favourites", {
       fields: ["userId", "productId"],
       type: "unique",
