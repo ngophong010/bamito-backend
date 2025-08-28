@@ -1,22 +1,20 @@
 "use strict";
 
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // ENHANCEMENT 3: Use the consistent, lowercase table name.
     await queryInterface.createTable("vouchers", {
-      // ENHANCEMENT 2: 'id' is the single, integer primary key for performance.
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
-      // 'voucherId' is now a regular column, but it must be unique.
       voucherId: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true, // This enforces the business rule.
+        unique: true,
       },
       image: {
         type: Sequelize.STRING,
@@ -34,7 +32,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      // ENHANCEMENT 1: Use the correct DATE type for time-based data.
+      // Use the correct DATE type for time-based data.
       timeStart: {
         type: Sequelize.DATE,
         allowNull: false,
