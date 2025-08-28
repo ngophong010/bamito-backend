@@ -3,16 +3,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // ENHANCEMENT 2: Use the consistent, lowercase table name.
     await queryInterface.createTable("roles", {
-      // ENHANCEMENT 1: 'id' is the single, integer primary key for performance.
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
-      // 'roleId' is now a regular column, but it must be unique.
       roleId: {
         type: Sequelize.STRING,
         allowNull: false,
