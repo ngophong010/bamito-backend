@@ -1,77 +1,60 @@
 import express from "express";
-import { body, query } from 'express-validator';
+import { body, query, param } from 'express-validator';
 
 import * as favouriteController from "../controllers/favouriteController.js";
-import { commonAuthUser } from "../middlewares/auth.js";
-import refreshToken from "../middlewares/refershToken.js";
+import { protect, isOwnerOrAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// --- Validation Chains ---
-const createValidation = [
-  body('userId', 'User ID is required').isNumeric(),
-  body('productId', 'Product ID is required').isNumeric(),
+// ===============================================================
+// --- VALIDATION CHAINS ---
+// ===============================================================
+const createFavouriteValidation = [
+  body('productId', 'Product ID is required and must be a number').isNumeric(),
 ];
 
-const deleteValidation = [
-  query('userId', 'A numeric user ID is required').isNumeric(),
-  query('productId', 'A numeric product ID is required').isNumeric(),
+const deleteFavouriteValidation = [
+  // The product to unfavourite is now identified by a single ID in the URL path
+  param('productId', 'A numeric product ID is required in the URL path').isNumeric(),
 ];
 
-const getValidation = [
-  query('userId', 'A numeric user ID is required').isNumeric(),
-];
+// ===============================================================
+// --- ROUTE DEFINITIONS (RESTful) ---
+// ===============================================================
 
-// router.post(
-//   "/create-favourite",
-//   refreshToken,
-//   commonAuthUser,
-//   favouriteController.handleCreateNewFavourite
-// );
-// router.delete(
-//   "/delete-favourite",
-//   refreshToken,
-//   commonAuthUser,
-//   favouriteController.handleDeleteFavourite
-// );
-// router.put(
-//   "/update-favourite",
-//   refreshToken,
-//   commonAuthUser,
-//   favouriteController.handleUpdateFavourite
-// );
-// router.get(
-//   "/get-all-favourite",
-//   refreshToken,
-//   commonAuthUser,
-//   favouriteController.handleGetAllFavourite
-// );
+// This route group handles actions on the user's collection of favourites
+router.route("/")
+    /**
+     * @route   GET /api/v1/favourites
+     * @desc    Get all of the current user's favourite product IDs
+     * @access  Private (User)
+     */
+    .get(
+        protect,
+        favouriteController.handleGetAllFavourite
+    )
+    /**
+     * @route   POST /api/v1/favourites
+     * @desc    Add a product to the current user's favourites
+     * @access  Private (User)
+     */
+    .post(
+        protect,
+        createFavouriteValidation,
+        favouriteController.handleCreateNewFavourite
+    );
 
-// --- Route Definitions (RESTful) ---
-// Note: We use the SAME endpoint for all actions, differentiated by the HTTP verb.
-
-router.post(
-  "/", // POST /api/favourites
-  refreshToken,
-  commonAuthUser,
-  createValidation,
-  favouriteController.handleCreateNewFavourite
-);
-
-router.get(
-  "/", // GET /api/favourites?userId=123
-  refreshToken,
-  commonAuthUser,
-  getValidation,
-  favouriteController.handleGetAllFavourite
-);
-
-router.delete(
-  "/", // DELETE /api/favourites?userId=123&productId=456
-  refreshToken,
-  commonAuthUser,
-  deleteValidation,
-  favouriteController.handleDeleteFavourite
-);
+// This route handles actions on a SINGLE favourite item
+router.route("/:productId")
+    /**
+     * @route   DELETE /api/v1/favourites/456
+     * @desc    Remove a product from the user's favourites
+     * @access  Private (User)
+     */
+    .delete(
+        protect,
+        deleteFavouriteValidation,
+        favouriteController.handleDeleteFavourite
+    );
 
 export default router;
