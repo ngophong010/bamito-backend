@@ -2,14 +2,12 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as feedBackController from "../controllers/feedBackController.js";
-import { feedbackAuthUser, commonAuthUser, authAdmin } from "../middlewares/auth.js";
-import refreshToken from "../middlewares/refershToken.js";
+import { protect, isAdmin, isFeedbackOwnerOrAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
 // --- Validation Chains ---
 const createFeedbackValidation = [
-  body('userId', 'User ID is required').isNumeric(),
   body('productId', 'Product ID is required').isNumeric(),
   body('orderId', 'Order ID is required').isNumeric(),
   body('sizeId', 'Size ID is required').isNumeric(),
@@ -30,55 +28,54 @@ const getFeedbackValidation = [
   query('productId', 'A numeric product ID is required in the query string').isNumeric(),
 ];
 
-// router.post(
-//   "/create-feedback",
-//   refreshToken,
-//   feedbackAuthUser,
-//   feedBackController.handleCreateNewFeedBack
-// );
-// router.delete(
-//   "/delete-feedback",
-//   refreshToken,
-//   feedbackAuthUser,
-//   feedBackController.handleDeleteFeedBack
-// );
-// router.put(
-//   "/update-feedback",
-//   refreshToken,
-//   feedbackAuthUser,
-//   feedBackController.handleUpdateFeedBack
-// );
-// router.get("/get-all-feedback", feedBackController.handleGetAllFeedBack);
+// ===============================================================
+// --- ROUTE DEFINITIONS (RESTful) ---
+// ===============================================================
 
-router.post(
-  "/", // POST /api/feedback
-  refreshToken,
-  commonAuthUser,
-  createFeedbackValidation,
-  feedBackController.handleCreateNewFeedBack
-);
+router.route("/")
+    /**
+     * @route   GET /api/v1/feedback?productId=123
+     * @desc    Get all feedback for a specific product
+     * @access  Public
+     */
+    .get(
+        getFeedbackValidation,
+        feedBackController.handleGetAllFeedBack
+    )
+    /**
+     * @route   POST /api/v1/feedback
+     * @desc    Create a new feedback for a product
+     * @access  Private (User)
+     */
+    .post(
+        protect,
+        createFeedbackValidation,
+        feedBackController.handleCreateNewFeedBack
+    );
 
-router.get(
-  "/", // GET /api/feedback?productId=123
-  getFeedbackValidation,
-  feedBackController.handleGetAllFeedBack
-);
-
-router.put(
-  "/:id", // PUT /api/feedback/1
-  refreshToken,
-  commonAuthUser, // Or authAdmin, depending on your rules
-  idParamValidation,
-  updateFeedbackValidation,
-  feedBackController.handleUpdateFeedBack
-);
-
-router.delete(
-  "/:id", // DELETE /api/feedback/1
-  refreshToken,
-  authAdmin, // Deleting feedback is often an admin-only action
-  idParamValidation,
-  feedBackController.handleDeleteFeedBack
-);
+router.route("/:id")
+    /**
+     * @route   PUT /api/v1/feedback/1
+     * @desc    Update a feedback
+     * @access  Private (Owner or Admin)
+     */
+    .put(
+        protect,
+        idParamValidation,
+        updateFeedbackValidation,
+        isFeedbackOwnerOrAdmin,
+        feedBackController.handleUpdateFeedBack
+    )
+    /**
+     * @route   DELETE /api/v1/feedback/1
+     * @desc    Delete a feedback
+     * @access  Private (Admin)
+     */
+    .delete(
+        protect,
+        idParamValidation,
+        isAdmin, // Deleting feedback is an admin-only action
+        feedBackController.handleDeleteFeedBack
+    );
 
 export default router;
