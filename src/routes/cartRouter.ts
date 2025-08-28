@@ -1,88 +1,60 @@
 import express from "express";
-import { body, query } from 'express-validator';
+import { body, query, param } from 'express-validator';
 
 import * as cartController from "../controllers/cartController.js";
-import { commonAuthUser } from "../middlewares/auth.js"; // Assuming a general user auth middleware
-import refreshToken from "../middlewares/refershToken.js";
+import { protect } from "../middlewares/auth.js"; 
 
 const router = express.Router();
 
 // --- Validation Chains ---
 const itemValidation = [
-  body('userId', 'User ID is required and must be a number').isNumeric(),
   body('productId', 'Product ID is required and must be a number').isNumeric(),
   body('sizeId', 'Size ID is required and must be a number').isNumeric(),
-  body('quantity', 'Quantity is required and must be a number').isNumeric(),
-  body('totalPrice', 'Total Price is required and must be a number').isNumeric(),
+  body('quantity', 'Quantity is required and must be a positive number').isInt({ gt: 0 }) // `gt` stands for "greater than"
+    .toInt(),
 ];
 
-const deleteItemValidation = [
-  query('userId', 'User ID is required in the query string').isNumeric(),
-  query('productId', 'Product ID is required in the query string').isNumeric(),
-  query('sizeId', 'Size ID is required in the query string').isNumeric(),
+const cartDetailIdValidation = [
+  param('cartDetailId', 'A numeric cart item ID is required in the URL path').isNumeric(),
 ];
 
-const getCartValidation = [
-  query('userId', 'User ID is required in the query string').isNumeric(),
-];
+// ===============================================================
+// --- ROUTE DEFINITIONS (RESTful) ---
+// ===============================================================
 
-// router.post(
-//   "/create-cart",
-//   refreshToken,
-//   commonAuthUser,
-//   itemValidation,
-//   cartController.handleAddOrUpdateItem
-// );
+// This route group handles actions on the user's cart as a whole
+router.route("/")
+    /**
+     * @route   GET /api/v1/cart
+     * @desc    Get the current user's shopping cart
+     * @access  Private (User)
+     */
+    .get(
+        protect,
+        cartController.handleGetAllProductCart
+    )
+    /**
+     * @route   POST /api/v1/cart
+     * @desc    Add or update an item in the current user's cart
+     * @access  Private (User)
+     */
+    .post(
+        protect,
+        itemValidation,
+        cartController.handleAddOrUpdateItem
+    );
 
-// router.post(
-//   "/add-product-to-cart",
-//   refreshToken,
-//   commonAuthUser,
-//   cartController.handleAddProductToCart
-// );
-// router.get(
-//   "/get-all-product-cart",
-//   refreshToken,
-//   commonAuthUser,
-//   cartController.handleGetAllProductCart
-// );
-// router.put(
-//   "/update-product-cart",
-//   refreshToken,
-//   commonAuthUser,
-//   cartController.handleUpdateProductCart
-// );
-// router.delete(
-//   "/delete-product-cart",
-//   refreshToken,
-//   commonAuthUser,
-//   cartController.handleDeleteProductCart
-// );
-// A single endpoint to add or update an item
-router.post(
-  "/item",
-  refreshToken,
-  commonAuthUser,
-  itemValidation,
-  cartController.handleAddOrUpdateItem
-);
-
-// A single endpoint to delete an item
-router.delete(
-  "/item",
-  refreshToken,
-  commonAuthUser,
-  deleteItemValidation,
-  cartController.handleDeleteProductCart
-);
-
-// An endpoint to get the entire cart
-router.get(
-  "/", // The root of the cart router
-  refreshToken,
-  commonAuthUser,
-  getCartValidation,
-  cartController.handleGetAllProductCart
-);
+// This route handles actions on a specific item WITHIN the cart
+router.route("/items/:cartDetailId")
+    /**
+     * @route   DELETE /api/v1/cart/items/123
+     * @desc    Delete a specific item from the user's cart
+     * @access  Private (User)
+     */
+    .delete(
+        protect,
+        cartDetailIdValidation,
+        cartController.handleDeleteProductCart
+    );
 
 export default router;
