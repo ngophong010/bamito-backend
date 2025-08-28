@@ -1,11 +1,10 @@
 "use strict";
 
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // ENHANCEMENT 2: Use the consistent, lowercase table name.
     await queryInterface.createTable("users", {
-      // The primary key is already correct, which is excellent.
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -37,7 +36,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      // ENHANCEMENT 1: Use the correct DATEONLY type for a birthday.
       birthday: {
         type: Sequelize.DATEONLY,
         allowNull: true,
@@ -51,13 +49,12 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
-      // ENHANCEMENT 1: The foreign key is now an efficient INTEGER.
       roleId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "roles", // lowercase table name
-          key: "id",    // integer primary key
+          model: "roles",
+          key: "id",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
