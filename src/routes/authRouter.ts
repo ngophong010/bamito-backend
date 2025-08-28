@@ -40,7 +40,8 @@ const registerValidation = [
     .not().isEmpty()
     .trim() // Removes leading/trailing whitespace
     .escape(), // Converts special HTML characters to prevent XSS attacks
-];
+  body('roleId', 'A numeric role ID is required').isNumeric(),
+  ];
 
 /**
  * @desc    Validation rules for user login.
@@ -78,14 +79,14 @@ const resetPasswordValidation = [
 ];
 
 // --- AUTHENTICATION & REGISTRATION ---
-router.post("/register", registerValidation, authLimiter, authController.handleRegister);
-router.post("/login", loginValidation, authLimiter, authController.handleLogin);
+router.post("/register", authLimiter, registerValidation, authController.handleRegister);
+router.post("/login", authLimiter, loginValidation,  authController.handleLogin);
 router.post("/logout", protect, authController.handleLogout);
 router.post("/refresh-token", authController.handleRefreshToken); // Often has its own, stricter rate limit
 router.get("/activate", activationValidation, authController.handleAuthenRegister);
 
 // --- PASSWORD RESET FLOW ---
-router.post("/password/send-otp", [body('email').isEmail()], sendOtpValidation, authController.handleSendOtpCode);
+router.post("/password/send-otp", sendOtpValidation, authController.handleSendOtpCode);
 router.put("/password/reset-with-otp", resetPasswordValidation,  authController.handleChangePassword);
 
 export default router;
