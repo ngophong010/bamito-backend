@@ -109,14 +109,14 @@ export const isOwnerOrAdmin = asyncHandler(async (req: Request, res: Response, n
  *          MUST be used *after* the `protect` middleware.
  */
 export const isOrderOwnerOrAdmin = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const orderId = Number(req.params.id || req.body.orderId || req.query.orderId);
+    const orderId = Number(req.params.id);
 
     if (!req.user) {
-      res.status(401).json({ message: "Not authorized." });
+      res.status(401).json({ message: "Not authorized." })
       return;
     };
     
-    // Admins can access any order
+    // Admins can always proceed
     if (req.user.role === 'R1') {
         return next();
     }
@@ -127,11 +127,11 @@ export const isOrderOwnerOrAdmin = asyncHandler(async (req: Request, res: Respon
     if (order) {
         next(); // The user owns this order. Grant access.
     } else {
-        res.status(403).json({ message: "Forbidden. You do not own this order." });
+        res.status(403).json({ message: "Forbidden. You do not have permission to access this order." });
     }
 });
 
-// Add this new function to /middlewares/auth.ts
+// Add this new function to handle For feedback router
 export const isFeedbackOwnerOrAdmin = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const feedbackId = Number(req.params.id);
 
@@ -154,3 +154,5 @@ export const isFeedbackOwnerOrAdmin = asyncHandler(async (req: Request, res: Res
         res.status(403).json({ message: "Forbidden. You do not have permission to modify this feedback." });
     }
 });
+
+
