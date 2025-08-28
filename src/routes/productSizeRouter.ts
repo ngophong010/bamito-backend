@@ -2,22 +2,23 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as productSizeController from "../controllers/productSizeController.js";
-import { authAdmin } from "../middlewares/auth.js";
-import refreshToken from "../middlewares/refershToken.js";
+import { protect, isAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// --- Validation Chains ---
+// ===============================================================
+// --- VALIDATION CHAINS ---
+// ===============================================================
+
 const createValidation = [
   body('productId', 'A numeric product ID is required').isNumeric(),
   body('sizeId', 'A numeric size ID is required').isNumeric(),
-  body('quantity', 'Quantity is required and must be a non-negative number').isInt({ min: 0 }),
+  body('quantity', 'Quantity is required and must be a non-negative integer').isInt({ min: 0 }),
 ];
 
+// For updating, an admin is most likely only changing the inventory count.
 const updateValidation = [
-  body('productId', 'Product ID must be a number').optional().isNumeric(),
-  body('sizeId', 'Size ID must be a number').optional().isNumeric(),
-  body('quantity', 'Quantity must be a non-negative number').optional().isInt({ min: 0 }),
+  body('quantity', 'Quantity is required and must be a non-negative integer').isInt({ min: 0 }),
 ];
 
 const idParamValidation = [
@@ -28,62 +29,55 @@ const getValidation = [
   query('productId', 'A numeric product ID is required in the query string').isNumeric(),
 ];
 
-// router.post(
-//   "/create-product-size",
-//   refreshToken,
-//   authAdmin,
-//   productSizeController.handleCreateNewProductSize
-// );
-// router.delete(
-//   "/delete-product-size",
-//   refreshToken,
-//   authAdmin,
-//   productSizeController.handleDeleteProductSize
-// );
-// router.put(
-//   "/update-product-size",
-//   refreshToken,
-//   authAdmin,
-//   productSizeController.handleUpdateProductSize
-// );
-// router.get(
-//   "/get-all-product-size",
-//   refreshToken,
-//   authAdmin,
-//   productSizeController.handleGetAllProductSize
-// );
+// ===============================================================
+// --- ROUTE DEFINITIONS (RESTful) ---
+// ===============================================================
 
-// --- Route Definitions (RESTful) ---
+router.route("/")
+    /**
+     * @route   GET /api/v1/product-sizes?productId=123
+     * @desc    Get all inventory entries for a specific product
+     * @access  Public
+     */
+    .get(
+        getValidation,
+        productSizeController.handleGetAllProductSize
+    )
+    /**
+     * @route   POST /api/v1/product-sizes
+     * @desc    Create a new inventory entry for a product/size combination
+     * @access  Private (Admin)
+     */
+    .post(
+        protect,
+        isAdmin,
+        createValidation,
+        productSizeController.handleCreateNewProductSize
+    );
 
-router.post(
-  "/", // POST /api/product-sizes
-  refreshToken,
-  authAdmin,
-  createValidation,
-  productSizeController.handleCreateNewProductSize
-);
-
-router.get(
-  "/", // GET /api/product-sizes?productId=123
-  getValidation,
-  productSizeController.handleGetAllProductSize
-);
-
-router.put(
-  "/:id", // PUT /api/product-sizes/1
-  refreshToken,
-  authAdmin,
-  idParamValidation,
-  updateValidation,
-  productSizeController.handleUpdateProductSize
-);
-
-router.delete(
-  "/:id", // DELETE /api/product-sizes/1
-  refreshToken,
-  authAdmin,
-  idParamValidation,
-  productSizeController.handleDeleteProductSize
-);
+router.route("/:id")
+    /**
+     * @route   PUT /api/v1/product-sizes/1
+     * @desc    Update the inventory quantity for a product size entry
+     * @access  Private (Admin)
+     */
+    .put(
+        protect,
+        isAdmin,
+        idParamValidation,
+        updateValidation,
+        productSizeController.handleUpdateProductSize
+    )
+    /**
+     * @route   DELETE /api/v1/product-sizes/1
+     * @desc    Delete a product size entry
+     * @access  Private (Admin)
+     */
+    .delete(
+        protect,
+        isAdmin,
+        idParamValidation,
+        productSizeController.handleDeleteProductSize
+    );
 
 export default router;
