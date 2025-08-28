@@ -1,9 +1,10 @@
+"use strict";
+
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // ENHANCEMENT 2: Use the consistent, lowercase table name.
     await queryInterface.createTable("delivery_addresses", {
-      // 'id' is the single, integer primary key.
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
