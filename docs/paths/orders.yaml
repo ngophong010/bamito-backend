@@ -1,0 +1,88 @@
+paths:
+  # --- USER-FACING ENDPOINTS ---
+  /orders:
+    post:
+      tags: [Orders (User)]
+      summary: Create a new order (e.g., for Cash on Delivery)
+      description: Creates a new order from the user's cart items. The server will perform all operations (create order, update inventory, clear cart) in a single transaction.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/order.yaml#/OrderInput'
+      responses:
+        '201':
+          description: Order created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                    description: The human-readable ID of the newly created order.
+        '400':
+          description: Bad Request (e.g., validation error, item out of stock).
+
+    get:
+      tags: [Orders (User)]
+      summary: Get the current user's order history
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: integer
+            description: "The status of orders to retrieve (e.g., 1: Pending, 2: Shipped, 3: Delivered)."
+        - $ref: '../components/parameters.yaml#/limit'
+        - $ref: '../components/parameters.yaml#/page'
+      responses:
+        '200':
+          description: A paginated list of the user's orders.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/order.yaml#/PaginatedOrders'
+
+  /orders/{id}:
+    get:
+      tags: [Orders (User)]
+      summary: Get details for a specific order
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '../components/parameters.yaml#/id'
+      responses:
+        '200':
+          description: The full details of the requested order.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/order.yaml#/OrderDetail'
+        '403':
+          description: Forbidden (User does not own this order).
+        '404':
+          description: Order not found.
+
+  /orders/{id}/cancel:
+    put:
+      tags: [Orders (User)]
+      summary: Cancel an order
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '../components/parameters.yaml#/id'
+      responses:
+        '200':
+          description: Order cancelled successfully.
+        '403':
+          description: Forbidden (User does not own this order).
+        '400':
+          description: Order cannot be cancelled.
+
+  # ... (and so on for all other paths: payment, admin, etc.)
