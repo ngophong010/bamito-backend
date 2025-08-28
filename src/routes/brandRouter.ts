@@ -3,7 +3,6 @@ import { body, query, param } from "express-validator";
 
 import * as brandController from "../controllers/brandController.js";
 import { protect, isAdmin } from "../middlewares/auth.js";
-import refreshToken from "../middlewares/refershToken.js";
 
 const router = express.Router();
 
