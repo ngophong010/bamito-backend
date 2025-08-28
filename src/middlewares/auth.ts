@@ -130,3 +130,27 @@ export const isOrderOwnerOrAdmin = asyncHandler(async (req: Request, res: Respon
         res.status(403).json({ message: "Forbidden. You do not own this order." });
     }
 });
+
+// Add this new function to /middlewares/auth.ts
+export const isFeedbackOwnerOrAdmin = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const feedbackId = Number(req.params.id);
+
+    if (!req.user) {
+      res.status(401).json({ message: "Not authorized." })
+      return;
+    };
+    
+    // Admins can always proceed
+    if (req.user.role === 'R1') {
+        return next();
+    }
+
+    // Check if the feedback belongs to the user
+    const feedback = await db.Feedback.findOne({ where: { id: feedbackId, userId: req.user.id }});
+
+    if (feedback) {
+        next(); // The user owns this feedback. Grant access.
+    } else {
+        res.status(403).json({ message: "Forbidden. You do not have permission to modify this feedback." });
+    }
+});
