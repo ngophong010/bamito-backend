@@ -1,43 +1,40 @@
 "use strict";
 
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // ENHANCEMENT 2: Use the consistent, lowercase table name.
     await queryInterface.createTable("orders", {
-      // ENHANCEMENT 1: 'id' is the single, integer primary key for performance.
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
-      // 'orderId' is now a regular column, but it must be unique.
       orderId: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true, // This enforces the business rule.
+        unique: true,
       },
-      // Foreign keys are now all efficient INTEGERS
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "users", // lowercase table name
-          key: "id",    // integer primary key
+          model: "users",
+          key: "id",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
       voucherId: {
         type: Sequelize.INTEGER,
-        allowNull: true, // An order might not have a voucher
+        allowNull: true,
         references: {
           model: "vouchers",
           key: "id",
         },
         onUpdate: "CASCADE",
-        onDelete: "SET NULL", // If a voucher is deleted, don't delete the order
+        onDelete: "SET NULL",
       },
       totalPrice: {
         type: Sequelize.INTEGER,
@@ -54,7 +51,7 @@ module.exports = {
       status: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0, // e.g., 0: Pending, 1: Confirmed, 2: Shipped, 3: Delivered
+        defaultValue: 0, // 0: Pending, 1: Confirmed, 2: Shipped, 3: Delivered
       },
       createdAt: {
         allowNull: false,
