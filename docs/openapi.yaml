@@ -1,4 +1,28 @@
 # /schemas/auth.yaml
+# In docs/openapi.yaml
+
+tags:
+  # ... your other tags
+  - name: Brands
+    description: Operations related to product brands.
+
+paths:
+  # ... your other paths
+  /brands:
+    $ref: './paths/brands.yaml#/paths/~1brands'
+  /brands/{id}:
+    $ref: './paths/brands.yaml#/paths/~1brands~1{id}'
+
+components:
+  schemas:
+    # ... your other schemas
+    Brand:
+      $ref: './schemas/brand.yaml#/Brand'
+    BrandInput:
+      $ref: './schemas/brand.yaml#/BrandInput'
+    PaginatedBrands:
+      $ref: './schemas/brand.yaml#/PaginatedBrands'
+
 RegisterInput:
   type: object
   properties:
