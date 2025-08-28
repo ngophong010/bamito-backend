@@ -2,15 +2,17 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as productTypeController from "../controllers/productTypeController.js";
-import { authAdmin } from "../middlewares/auth.js";
-import refreshToken from "../middlewares/refershToken.js";
+import { protect, isAdmin } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// --- Validation Chains ---
+// ===============================================================
+// --- VALIDATION CHAINS ---
+// ===============================================================
+
 const createOrUpdateValidation = [
-  body('productTypeId', 'Product Type ID is required').isString().notEmpty().trim(),
-  body('productTypeName', 'Product Type Name is required').isString().notEmpty().trim(),
+  body('productTypeId', 'Product Type ID is required and must be a non-empty string').isString().notEmpty().trim(),
+  body('productTypeName', 'Product Type Name is required and must be a non-empty string').isString().notEmpty().trim(),
 ];
 
 const idParamValidation = [
@@ -21,65 +23,59 @@ const productTypeIdParamValidation = [
   param('productTypeId', 'A Product Type ID string is required in the URL path').isString().notEmpty(),
 ];
 
-// router.post(
-//   "/create-product-type",
-//   refreshToken,
-//   authAdmin,
-//   productTypeController.handleCreateNewProductType
-// );
-// router.delete(
-//   "/delete-product-type",
-//   refreshToken,
-//   authAdmin,
-//   productTypeController.handleDeleteProductType
-// );
-// router.put(
-//   "/update-product-type",
-//   refreshToken,
-//   authAdmin,
-//   productTypeController.handleUpdateProductType
-// );
-// router.get(
-//   "/get-all-product-type",
-//   productTypeController.handleGetAllProductType
-// );
+// ===============================================================
+// --- ROUTE DEFINITIONS (RESTful) ---
+// ===============================================================
 
-// router.get("/get-product-type", productTypeController.handleGetProductType);
+router.route("/")
+    /**
+     * @route   GET /api/v1/product-types
+     * @desc    Get all product types (paginated for admin or full list for users)
+     * @access  Public
+     */
+    .get(productTypeController.handleGetAllProductType)
+    /**
+     * @route   POST /api/v1/product-types
+     * @desc    Create a new product type
+     * @access  Private (Admin)
+     */
+    .post(
+        protect,
+        isAdmin,
+        createOrUpdateValidation,
+        productTypeController.handleCreateNewProductType
+    );
 
-router.post(
-  "/", // POST /api/product-types
-  refreshToken,
-  authAdmin,
-  createOrUpdateValidation,
-  productTypeController.handleCreateNewProductType
-);
+router.route("/:id")
+    /**
+     * @route   PUT /api/v1/product-types/1
+     * @desc    Update a product type by its numeric ID
+     * @access  Private (Admin)
+     */
+    .put(
+        protect,
+        isAdmin,
+        idParamValidation,
+        createOrUpdateValidation,
+        productTypeController.handleUpdateProductType
+    )
+    /**
+     * @route   DELETE /api/v1/product-types/1
+     * @desc    Delete a product type by its numeric ID
+     * @access  Private (Admin)
+     */
+    .delete(
+        protect,
+        isAdmin,
+        idParamValidation,
+        productTypeController.handleDeleteProductType
+    );
 
+// This route uses the string business key for public-facing lookups
 router.get(
-  "/", // GET /api/product-types?limit=10&page=1
-  productTypeController.handleGetAllProductType
-);
-
-router.get(
-  "/:productTypeId", // GET /api/product-types/VOTCAULONG
+  "/:productTypeId",
   productTypeIdParamValidation,
   productTypeController.handleGetProductType
-);
-
-router.put(
-  "/:id", // PUT /api/product-types/1
-  refreshToken,
-  authAdmin,
-  idParamValidation,
-  createOrUpdateValidation,
-  productTypeController.handleUpdateProductType
-);
-
-router.delete(
-  "/:id", // DELETE /api/product-types/1
-  refreshToken,
-  authAdmin,
-  idParamValidation,
-  productTypeController.handleDeleteProductType
 );
 
 export default router;
