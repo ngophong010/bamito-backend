@@ -1,83 +1,62 @@
-# /schemas/auth.yaml
-# In docs/openapi.yaml
+openapi: 3.0.0
+info:
+  title: BAMITO Badminton Shop API
+  version: 1.0.0
+  description: The official API documentation for the BAMITO e-commerce backend.
+
+servers:
+  - url: https://your-production-domain.com/api/v1
+    description: Production Server
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
 
 tags:
-  # ... your other tags
+  - name: Authentication
+  - name: Users
+  # --- ADD THESE NEW TAGS ---
+  - name: Products
+    description: Publicly accessible endpoints for viewing products.
+  - name: Products (Admin)
+    description: Secure endpoints for managing the product catalog.
+  # ---
   - name: Brands
-    description: Operations related to product brands.
+  # ... and so on for all your other resources
 
 paths:
-  # ... your other paths
-  /brands:
-    $ref: './paths/brands.yaml#/paths/~1brands'
-  /brands/{id}:
-    $ref: './paths/brands.yaml#/paths/~1brands~1{id}'
+  # ... your existing paths for auth, users, etc.
+  
+  # --- ADD THE NEW PRODUCT PATHS ---
+  /products:
+    $ref: './paths/products.yaml#/paths/~1products'
+  /products/{productId}:
+    $ref: './paths/products.yaml#/paths/~1products~1{productId}'
+  /products/{productId}/feedback:
+    $ref: './paths/products.yaml#/paths/~1products~1{productId}~1feedback'
+  /products/sale-off:
+    $ref: './paths/products.yaml#/paths/~1products~1sale-off'
+  /products/types/{productTypeId}:
+    $ref: './paths/products.yaml#/paths/~1products~1types~1{productTypeId}'
+  /products/{id}:
+    $ref: './paths/products.yaml#/paths/~1products~1{id}'
+  # ---
+
+  # ... your other paths for brands, etc.
 
 components:
+  securitySchemes:
+    $ref: './components/security.yaml'
   schemas:
-    # ... your other schemas
-    Brand:
-      $ref: './schemas/brand.yaml#/Brand'
-    BrandInput:
-      $ref: './schemas/brand.yaml#/BrandInput'
-    PaginatedBrands:
-      $ref: './schemas/brand.yaml#/PaginatedBrands'
+    # ... your existing schemas
+    
+    # --- ADD THE NEW PRODUCT SCHEMAS ---
+    ProductInput:
+      $ref: './schemas/product.yaml#/ProductInput'
+    ProductSummary:
+      $ref: './schemas/product.yaml#/ProductSummary'
+    ProductDetail:
+      $ref: './schemas/product.yaml#/ProductDetail'
+    PaginatedProducts:
+      $ref: './schemas/product.yaml#/PaginatedProducts'
+    # ---
 
-RegisterInput:
-  type: object
-  properties:
-    email:
-      type: string
-      format: email
-    password:
-      type: string
-      format: password
-      minLength: 6
-    userName:
-      type: string
-    roleId:
-      type: integer
-      description: The numeric ID of the role to assign (e.g., 2 for Customer).
-  required: [email, password, userName, roleId]
-
-LoginInput:
-  type: object
-  properties:
-    email:
-      type: string
-      format: email
-    password:
-      type: string
-  required: [email, password]
-
-PasswordResetInput:
-  type: object
-  properties:
-    email:
-      type: string
-      format: email
-    otpCode:
-      type: string
-      example: '123456'
-    password:
-      type: string
-      format: password
-      minLength: 6
-  required: [email, otpCode, password]
-
-AuthTokensResponse:
-  type: object
-  properties:
-    errCode:
-      type: integer
-    message:
-      type: string
-    data:
-      type: object
-      properties:
-        access_token:
-          type: string
-          format: jwt
-        refresh_token:
-          type: string
-          format: jwt
+    # ... your other schemas for Brand, Error, etc.
