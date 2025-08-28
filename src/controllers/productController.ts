@@ -1,4 +1,4 @@
-import productService from "../services/productService";
+import productService from "../services/productService.js";
 const cloudinary = require("cloudinary").v2;
 
 let handleCreateNewProduct = async (req, res) => {
