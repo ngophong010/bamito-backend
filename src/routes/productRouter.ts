@@ -1,53 +1,84 @@
 import express from "express";
-import productController from "../controllers/productController";
-import uploadCloud from "../middlewares/uploadImg";
-import { authAdmin, commonAuthUser } from "../middlewares/auth";
-import refreshToken from "../middlewares/refershToken";
-let router = express.Router();
+import { body, query, param } from 'express-validator';
 
-router.post(
-  "/create-product",
-  uploadCloud.single("image"),
-  refreshToken,
-  authAdmin,
-  productController.handleCreateNewProduct
-);
-router.delete(
-  "/delete-product",
-  refreshToken,
-  authAdmin,
-  productController.handleDeleteProduct
-);
-router.put(
-  "/update-product",
-  uploadCloud.single("image"),
-  refreshToken,
-  authAdmin,
-  productController.handleUpdateProduct
-);
-router.get("/get-all-product", productController.handleGetAllProduct);
+import * as productController from "../controllers/productController.js";
+import * as feedbackController from "../controllers/feedBackController.js"; // Feedback logic is separate
+import { protect, isAdmin } from "../middlewares/auth.js";
+import { uploadImage } from "../middlewares/uploadImage.js";
+
+const router = express.Router();
+
+// ===============================================================
+// --- VALIDATION CHAINS ---
+// ===============================================================
+const createOrUpdateValidation = [
+  body('productId').isString().withMessage('Product ID must be a string.').notEmpty(),
+  body('name').isString().withMessage('Name must be a string.').notEmpty(),
+  body('price').isNumeric().withMessage('Price must be a number.'),
+  body('brandId').isNumeric().withMessage('brandId must be a numeric ID.'),
+  body('productTypeId').isNumeric().withMessage('productTypeId must be a numeric ID.'),
+];
+
+const paginationValidation = [
+    query('limit').optional().isNumeric().toInt(),
+    query('page').optional().isNumeric().toInt(),
+];
+
+// ===============================================================
+// --- PUBLIC ROUTES (No Auth Required) ---
+// ===============================================================
+
+router.get("/", paginationValidation, productController.handleGetAllProduct);
+router.get("/sale-off", paginationValidation, productController.handleGetAllProductSaleOff);
+
 router.get(
-  "/get-all-product-of-the-product-type",
+  "/types/:productTypeId",
+  [param('productTypeId').isNumeric()],
   productController.handleGetAllProductOfTheProductType
 );
-router.get("/get-product", productController.getProduct);
+
 router.get(
-  "/get-product-feedback",
-  refreshToken,
-  commonAuthUser,
-  productController.handleGetAllProuctFeedback
-);
-router.get(
-  "/get-product-sale-off",
-  productController.handleGetAllProuctSaleOff
-);
-router.get(
-  "/get-product-favourite",
-  refreshToken,
-  commonAuthUser,
-  productController.handleGetAllProuctFavourite
+  "/:productId", // Using the business key for public, SEO-friendly URLs
+  [param('productId').isString().notEmpty()],
+  productController.getProduct
 );
 
-router.get("/get-product-name", productController.handleGetNameProduct);
+router.get(
+  "/:productId/feedback", // Nested resource for feedback
+  [param('productId').isNumeric()],
+  feedbackController.handleGetAllFeedBack
+);
+
+// ===============================================================
+// --- ADMIN-ONLY ROUTES (Requires Auth and Admin Role) ---
+// ===============================================================
+
+router.post(
+  "/", // POST /api/products
+  protect,
+  isAdmin,
+  uploadImage.single('image'),
+  createOrUpdateValidation,
+  productController.handleCreateNewProduct
+);
+
+// Note: Admin actions use the numeric primary key `id` for internal operations
+router.put(
+  "/:id", // PUT /api/products/1
+  protect,
+  isAdmin,
+  uploadImage.single('image'),
+  [param('id').isNumeric()],
+  createOrUpdateValidation,
+  productController.handleUpdateProduct
+);
+
+router.delete(
+  "/:id", // DELETE /api/products/1
+  protect,
+  isAdmin,
+  [param('id').isNumeric()],
+  productController.handleDeleteProduct
+);
 
 export default router;
