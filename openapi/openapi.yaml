@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  title: BAMITO Badminton Shop API
+  version: 1.0.0
+  description: The official API documentation for the BAMITO e-commerce backend.
+
+servers:
+  - url: https://your-production-domain.com/api/v1
+    description: Production Server
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
+
+tags:
+  - name: Authentication
+    description: Endpoints for user registration, login, and session management.
+  - name: Users (Profile)
+    description: Operations for a user to manage their own profile.
+  - name: Users (Admin)
+    description: Operations for administrators to manage all users.
+  - name: Products
+    description: Publicly accessible endpoints for viewing products and categories.
+  - name: Products (Admin)
+    description: Secure endpoints for managing the product catalog.
+  - name: Inventory (Admin)
+    description: Secure endpoints for managing product stock levels.
+  - name: Cart
+    description: Operations for managing the user's shopping cart.
+  - name: Orders
+    description: Operations for creating and viewing orders.
+  - name: Orders (Admin)
+    description: Operations for administrators to manage all orders and view reports.
+  - name: Favourites
+    description: Endpoints for managing a user's favourite products.
+  - name: Feedback
+    description: Endpoints for submitting and viewing product feedback.
+  - name: Brands (Admin)
+  - name: Sizes (Admin)
+  - name: Product Types (Admin)
+  - name: Vouchers (Admin)
+  - name: Roles (Admin)
+    description: Operations for managing user roles.
+
+
+# This section lists all your API endpoints by referencing the path files.
+paths:
+  # Auth
+  /auth/register: { $ref: './paths/auth.yaml#/paths/~1auth~1register' }
+  /auth/login: { $ref: './paths/auth.yaml#/paths/~1auth~1login' }
+  /auth/logout: { $ref: './paths/auth.yaml#/paths/~1auth~1logout' }
+  /auth/refresh-token: { $ref: './paths/auth.yaml#/paths/~1auth~1refresh-token' }
+  /auth/activate: { $ref: './paths/auth.yaml#/paths/~1auth~1activate' }
+  /auth/password/send-otp: { $ref: './paths/auth.yaml#/paths/~1auth~1password~1send-otp' }
+  /auth/password/reset: { $ref: './paths/auth.yaml#/paths/~1auth~1password~1reset-with-otp' }
+
+  # Users
+  /users/profile: { $ref: './paths/users.yaml#/paths/~1users~1profile' }
+  /users/profile/change-password: { $ref: './paths/users.yaml#/paths/~1users~1profile~1change-password' }
+  /users: { $ref: './paths/users.yaml#/paths/~1users' }
+  /users/{id}: { $ref: './paths/users.yaml#/paths/~1users~1{id}' }
+
+  # Roles
+  /roles:
+    $ref: './paths/roles.yaml#/paths/~1roles'
+
+  # Products
+  /products: { $ref: './paths/products.yaml#/paths/~1products' }
+  /products/{productId}: { $ref: './paths/products.yaml#/paths/~1products~1{productId}' }
+  /products/{id}: { $ref: './paths/products.yaml#/paths/~1products~1{id}' }
+  /products/sale-off: { $ref: './paths/products.yaml#/paths/~1products~1sale-off' }
+  /products/types/{productTypeId}: { $ref: './paths/products.yaml#/paths/~1products~1types~1{productTypeId}' }
+  
+  # Brands
+  /brands: { $ref: './paths/brands.yaml#/paths/~1brands' }
+  /brands/{id}: { $ref: './paths/brands.yaml#/paths/~1brands~1{id}' }
+
+  # ... and so on for every single path in your other router files ...
+
+# This section is the library of all your reusable components.
+components:
+  securitySchemes:
+    $ref: './components/security.yaml'
+  parameters:
+    $ref: './components/parameters.yaml'
+  schemas:
+    # Auth Schemas
+    RegisterInput: { $ref: './schemas/auth.yaml#/RegisterInput' }
+    LoginInput: { $ref: './schemas/auth.yaml#/LoginInput' }
+    
+    # User Schemas
+    UserInput: { $ref: './schemas/user.yaml#/UserInput' }
+    UserDetail: { $ref: './schemas/user.yaml#/UserDetail' }
+    PaginatedUsers: { $ref: './schemas/user.yaml#/PaginatedUsers' }
+
+    # Role Schemas
+    Role:
+      $ref: './schemas/role.yaml#/Role'
+    
+    # Product Schemas
+    ProductInput: { $ref: './schemas/product.yaml#/ProductInput' }
+    ProductSummary: { $ref: './schemas/product.yaml#/ProductSummary' }
+    ProductDetail: { $ref: './schemas/product.yaml#/ProductDetail' }
+    PaginatedProducts: { $ref: './schemas/product.yaml#/PaginatedProducts' }
+
+    # Brand Schemas
+    Brand: { $ref: './schemas/brand.yaml#/Brand' }
+    BrandInput: { $ref: './schemas/brand.yaml#/BrandInput' }
+    PaginatedBrands: { $ref: './schemas/brand.yaml#/PaginatedBrands' }
+    
+    # Shared Schemas
+    Error: { $ref: './schemas/error.yaml#/Error' }
+    SuccessMessage: { $ref: './schemas/shared.yaml#/SuccessMessage' }
+    
+    Address:
+      $ref: './schemas/address.yaml#/Address'
+    AddressInput:
+      $ref: './schemas/address.yaml#/AddressInput'
+    PaginationInfo:
+      $ref: './schemas/shared.yaml#/PaginationInfo'

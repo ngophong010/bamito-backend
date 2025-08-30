@@ -1,0 +1,73 @@
+paths:
+  /product-sizes:
+    get:
+      tags: [Inventory]
+      summary: Get all inventory entries for a specific product
+      description: Fetches a paginated list of all size and stock combinations for a given product ID.
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - $ref: '../components/parameters.yaml#/limit'
+        - $ref: '../components/parameters.yaml#/page'
+      responses:
+        '200':
+          description: A paginated list of inventory entries.
+          content:
+            application/json:
+              schema:
+                $ref: '../schemas/product-size.yaml#/PaginatedProductSizes'
+
+    post:
+      tags: [Inventory (Admin)]
+      summary: Create a new inventory entry (Admin only)
+      description: Creates a new link between a product and a size, establishing its initial stock quantity.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/product-size.yaml#/ProductSizeInput'
+      responses:
+        '201':
+          description: Inventory entry created successfully.
+        '400':
+          description: Bad Request (Validation error or this product/size combo already exists).
+
+  /product-sizes/{id}:
+    put:
+      tags: [Inventory (Admin)]
+      summary: Update an inventory entry (Admin only)
+      description: Updates the stock quantity for a specific product size entry.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '../components/parameters.yaml#/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/product-size.yaml#/UpdateProductSizeInput'
+      responses:
+        '200':
+          description: Inventory updated successfully.
+        '404':
+          description: Product size entry not found.
+
+    delete:
+      tags: [Inventory (Admin)]
+      summary: Delete an inventory entry (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '../components/parameters.yaml#/id'
+      responses:
+        '200':
+          description: Inventory entry deleted successfully.
+        '404':
+          description: Product size entry not found.
