@@ -1,5 +1,8 @@
+import { Sequelize} from "sequelize";
 import db from "../models/index.js";
+import { Favourite } from "../models/favourite.js";
 import type { ServiceResponse } from "../types/serviceResponse.js";
+import type {  FavouriteWithProduct, ProductWithRatingAttributes } from "../types/shared.js";
 
 // Define the shape of the data for type safety
 interface FavouriteData {
@@ -79,8 +82,73 @@ const getAllFavouriteService = async (userId: number): Promise<ServiceResponse> 
   return { errCode: 0, data: favouriteProductIds, message: "get all favourite product success" };
 };
 
+const getAllProductFavouriteService = async (userId?: number, limit?: number, page?: number): Promise<ServiceResponse> => {
+  if (!userId) {
+    return { errCode: 1, message: "Missing required userId parameter!" };
+  }
+
+  const effectiveLimit = limit || 12;
+  const effectivePage = page || 1;
+  const offset = (effectivePage - 1) * effectiveLimit;
+
+  const { count, rows } = await db.Favourite.findAndCountAll({
+    where: { userId },
+    limit: effectiveLimit,
+    offset,
+    order: [["id", "DESC"]],
+    // We only need the Product data, so we can exclude the Favourite's own attributes
+    attributes: [],
+    include: [
+      {
+        model: db.Product,
+        as: "ProductFavouriteData", // Use the alias defined in your Favourite model
+        // This is a nested include to get all necessary data in one go
+        include: [
+          { model: db.ProductType, as: "productTypeData", attributes: ["productTypeId", "productTypeName"] },
+          { model: db.Brand, as: "brandData", attributes: ["brandId", "brandName"] },
+          { model: db.Feedback, as: "feedbacks", attributes: [] },
+        ],
+        attributes: {
+          exclude: ["createdAt", "updatedAt", "imageId", "brandId", "productTypeId", "descriptionContent", "descriptionHTML"],
+          // Perform the aggregation on the nested model
+          include: [
+            [Sequelize.fn("AVG", Sequelize.col("ProductFavouriteData->feedbacks.rating")), "averageRating"],
+          ],
+        },
+      },
+    ],
+    group: [
+      "Favourite.id",
+      "ProductFavouriteData.id",
+      "ProductFavouriteData->productTypeData.id",
+      "ProductFavouriteData->brandData.id",
+    ],
+    subQuery: false,
+  });
+
+   const products = rows.map((favourite: FavouriteWithProduct) => {
+    const plainProduct = favourite.ProductFavouriteData.get({ plain: true }) as ProductWithRatingAttributes;
+    const avg = parseFloat(plainProduct.averageRating || '0');
+    (plainProduct as any).rating = Math.round(avg * 10) / 10;
+    delete (plainProduct as any).averageRating;
+    return plainProduct;
+  });
+
+  return {
+    errCode: 0,
+    data: {
+      totalItems: count.length, // With grouping, count is an array of grouped results
+      totalPages: Math.ceil(count.length / effectiveLimit),
+      currentPage: effectivePage,
+      products: products,
+    },
+    message: "Favourite products retrieved successfully",
+  };
+};
+
 export {
   createNewFavouriteService,
   deleteFavouriteService,
   getAllFavouriteService,
+  getAllProductFavouriteService
 };
