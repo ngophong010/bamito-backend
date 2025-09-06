@@ -1,7 +1,11 @@
 import db from "../models/index.js";
 import { Op, Sequelize, where } from "sequelize";
-import type { ServiceResponse } from "../types/serviceResponse.js";
 import { v2 as cloudinary } from 'cloudinary';
+import type { ServiceResponse } from "../types/serviceResponse.js";
+import type { FilterOptions, ProductWithRating, ProductWithRatingAttributes, UnreviewedItem } from "../types/shared.js";
+
+import { Product } from "../models/product.js";
+
 
 interface ProductData {
   id?: number;
@@ -96,7 +100,7 @@ const updateProductService = async (data: ProductData): Promise<ServiceResponse>
 };
 
 // Pagination
-const getAllProductService = async (limit: number, page: number, sort: string, name: string): Promise<ServiceResponse> => {
+const getAllProductService = async (limit?: number, page?: number, sort?: string, name?: string): Promise<ServiceResponse> => {
   const effectiveLimit = limit || 10;
   const offset = ((page || 1) - 1) * effectiveLimit;
   const whereClause: { name?: any } = {};
@@ -133,7 +137,13 @@ const getAllProductService = async (limit: number, page: number, sort: string, n
       totalItems: count.length, // count is an array of objects when grouping
       totalPages: Math.ceil(count.length / effectiveLimit),
       currentPage: page || 1,
-      products: rows.map(p => ({ ...p.get({ plain: true }) })), // Sanitize the output
+      products: rows.map((p: ProductWithRating) => {
+        const plainProduct = p.get({plain: true}) as ProductWithRatingAttributes;
+        const avg = parseFloat(plainProduct.averageRating || '0');
+        (plainProduct as any).rating = Math.round(avg * 10) / 10;
+        delete (plainProduct as any).averageRating;
+        return plainProduct;
+      }),
     },
     message: "Products retrieved successfully",
   };
@@ -188,11 +198,11 @@ const getAllProductOfTheProductTypeService = async(
   });
 
   // 4. Sanitize the output
-  const products = rows.map(product => {
-    const plainProduct = product.get({ plain: true });
-    // The calculated average is now a property on the object
-    plainProduct.rating = parseFloat(plainProduct.averageRating || 0).toFixed(1);
-    delete plainProduct.averageRating; // Clean up the temporary field
+  const products = rows.map((product: ProductWithRating) => {
+    const plainProduct = product.get({ plain: true }) as ProductWithRatingAttributes;
+    const avg = parseFloat(plainProduct.averageRating || '0');
+    (plainProduct as any).rating = Math.round(avg * 10) / 10;
+    delete (plainProduct as any).averageRating;
     return plainProduct;
   });
 
@@ -315,7 +325,7 @@ const getAllProuctFeedbackService = async (userId: number): Promise<ServiceRespo
     nest: true,
   });
 
-  const formattedData = unreviewedItems.map((item) => ({
+  const formattedData = (unreviewedItems as UnreviewedItem[]).map((item: UnreviewedItem) => ({
     productId: item.productId,
     orderId: item.orderId,
     quantity: item.quantity,
@@ -361,11 +371,11 @@ const getAllProductSaleOffService = async (limit?: number, page?: number): Promi
     subQuery: false,
   });
 
-  const products = rows.map(product => {
-    const plainProduct = product.get({ plain: true });
-    // The calculated average is now a property on the object
-    plainProduct.rating = parseFloat(plainProduct.averageRating || 0).toFixed(1);
-    delete plainProduct.averageRating; // Clean up the temporary field
+  const products = rows.map((product: ProductWithRating) => {
+    const plainProduct = product.get({ plain: true }) as ProductWithRatingAttributes;
+    const avg = parseFloat(plainProduct.averageRating || '0');
+    (plainProduct as any).rating = Math.round(avg * 10) / 10;
+    delete (plainProduct as any).averageRating;
     return plainProduct;
   });
 
@@ -381,69 +391,6 @@ const getAllProductSaleOffService = async (limit?: number, page?: number): Promi
   };
 };
 
-const getAllProductFavouriteService = async (userId:number, limit?: number, page?: number): Promise<ServiceResponse> => {
-  if (!userId) {
-    return { errCode: 1, message: "Missing required userId parameter!" };
-  }
-
-  const effectiveLimit = limit || 12;
-  const effectivePage = page || 1;
-  const offset = (effectivePage - 1) * effectiveLimit;
-
-  const { count, rows } = await db.Favourite.findAndCountAll({
-    where: { userId },
-    limit: effectiveLimit,
-    offset,
-    order: [["id", "DESC"]],
-    // We only need the Product data, so we can exclude the Favourite's own attributes
-    attributes: [],
-    include: [
-      {
-        model: db.Product,
-        as: "ProductFavouriteData", // Use the alias defined in your Favourite model
-        // This is a nested include to get all necessary data in one go
-        include: [
-          { model: db.ProductType, as: "productTypeData", attributes: ["productTypeId", "productTypeName"] },
-          { model: db.Brand, as: "brandData", attributes: ["brandId", "brandName"] },
-          { model: db.Feedback, as: "feedbacks", attributes: [] },
-        ],
-        attributes: {
-          exclude: ["createdAt", "updatedAt", "imageId", "brandId", "productTypeId", "descriptionContent", "descriptionHTML"],
-          // Perform the aggregation on the nested model
-          include: [
-            [Sequelize.fn("AVG", Sequelize.col("ProductFavouriteData->feedbacks.rating")), "averageRating"],
-          ],
-        },
-      },
-    ],
-    group: [
-      "Favourite.id",
-      "ProductFavouriteData.id",
-      "ProductFavouriteData->productTypeData.id",
-      "ProductFavouriteData->brandData.id",
-    ],
-    subQuery: false,
-  });
-
-   const products = rows.map(favourite => {
-    const plainProduct = favourite.ProductFavouriteData.get({ plain: true });
-    plainProduct.rating = parseFloat(plainProduct.averageRating || 0).toFixed(1);
-    delete plainProduct.averageRating;
-    return plainProduct;
-  });
-
-  return {
-    errCode: 0,
-    data: {
-      totalItems: count.length, // With grouping, count is an array of grouped results
-      totalPages: Math.ceil(count.length / effectiveLimit),
-      currentPage: effectivePage,
-      products: products,
-    },
-    message: "Favourite products retrieved successfully",
-  };
-};
-
 export {
   createNewProductService,
   deleteProductService,
@@ -453,5 +400,4 @@ export {
   getAllProductOfTheProductTypeService,
   getAllProuctFeedbackService,
   getAllProductSaleOffService,
-  getAllProductFavouriteService,
 };
