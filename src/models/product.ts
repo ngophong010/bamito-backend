@@ -13,7 +13,7 @@ import type { ProductType } from "./productType.js";
 import type { ProductSize } from "./productSize.js";
 import type { Models } from "./index.js";
 
-interface ProductAttributes {
+export interface ProductAttributes {
   id: number;
   productId: string; // The unique business key
   name: string;
