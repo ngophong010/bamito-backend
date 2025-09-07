@@ -39,4 +39,4 @@ PaginatedProductTypes:
     productTypes:
       type: array
       items:
-        $ref: "#/components/schemas/ProductType"
+        $ref: "#/ProductType"
