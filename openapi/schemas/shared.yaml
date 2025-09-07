@@ -1,5 +1,3 @@
-# /docs/schemas/shared.yaml
-
 # --- A generic success message for POST, PUT, DELETE responses ---
 SuccessMessage:
   type: object
