@@ -1,4 +1,3 @@
-# /schemas/auth.yaml
 RegisterInput:
   type: object
   properties:
