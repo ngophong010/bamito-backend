@@ -1,5 +1,3 @@
-# /docs/schemas/product-size.yaml
-
 # The object the client sends to create a new inventory entry
 ProductSizeInput:
   type: object
