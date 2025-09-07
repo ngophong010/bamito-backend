@@ -1,5 +1,3 @@
-# /docs/schemas/voucher.yaml
-
 # The full Voucher object returned by the API
 Voucher:
   type: object
