@@ -10,7 +10,7 @@ ProductSizeInput:
       description: The numeric primary key ID of the size.
     quantity:
       type: integer
-      description: The initial stock quantity for this combination.
+      description: The initial stock quantity for this product/size combination.
       minimum: 0
   required:
     - productId
@@ -23,7 +23,7 @@ UpdateProductSizeInput:
   properties:
     quantity:
       type: integer
-      description: The new stock quantity for this combination.
+      description: The new stock quantity for this product/size combination.
       minimum: 0
   required:
     - quantity
@@ -37,10 +37,10 @@ ProductSizeView:
       readOnly: true
     quantity:
       type: integer
-      description: The current available stock.
+      description: The current available stock for this specific product and size.
     sold:
       type: integer
-      description: The total number of units sold.
+      description: The total number of units sold for this specific product and size.
       readOnly: true
     productData:
       $ref: './product.yaml#/ProductSummary'
@@ -50,14 +50,11 @@ ProductSizeView:
 # The shape of the response for the paginated GET endpoint
 PaginatedProductSizes:
   type: object
-  properties:
-    totalItems:
-      type: integer
-    totalPages:
-      type: integer
-    currentPage:
-      type: integer
-    productSizes:
-      type: array
-      items:
-        $ref: '#/ProductSizeView'
+  allOf:
+    - $ref: './shared.yaml#/PaginationInfo'
+    - type: object
+      properties:
+        productSizes:
+          type: array
+          items:
+            $ref: '#/ProductSizeView'
