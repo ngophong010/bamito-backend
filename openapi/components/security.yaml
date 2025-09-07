@@ -1,5 +1,3 @@
-# /docs/components/security.yaml
-
 BearerAuth:
   type: http
   scheme: bearer
