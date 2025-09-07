@@ -1,5 +1,3 @@
-# /docs/schemas/role.yaml
-
 Role:
   type: object
   description: Represents a user role within the system.
