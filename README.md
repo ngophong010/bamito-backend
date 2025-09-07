@@ -2,7 +2,7 @@
 
 This repository contains the complete backend API for the BAMITO e-commerce platform. It is a modern, scalable, and secure RESTful API built with Express.js, TypeScript, and Sequelize, following a professional **API-First design methodology**.
 
-The entire API is documented using an **[OpenAPI 3.1.0 Specification](#-api-documentation)**, which serves as the single source of truth for the application's functionality.
+The entire API is documented using an **[OpenAPI 3.0.0 Specification](#-api-documentation)**, which serves as the single source of truth for the application's functionality.
 
 ---
 
