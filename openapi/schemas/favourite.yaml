@@ -1,5 +1,3 @@
-# /docs/schemas/favourite.yaml
-
 # The object the client sends to add a favourite
 FavouriteInput:
   type: object
