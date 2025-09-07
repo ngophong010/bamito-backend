@@ -1,5 +1,3 @@
-# /docs/schemas/feedback.yaml
-
 # The object a client sends to create a new feedback
 FeedbackInput:
   type: object
