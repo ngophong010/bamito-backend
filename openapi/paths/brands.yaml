@@ -1,5 +1,3 @@
-# /docs/paths/brands.yaml
-
 paths:
   # This path represents the collection of all brands
   /brands:
@@ -26,7 +24,7 @@ paths:
                 $ref: '../schemas/error.yaml#/Error'
 
     post:
-      tags: [Brands]
+      tags: [Brands (Admin)]
       summary: Create a new brand (Admin only)
       description: Creates a new brand. This operation requires administrator privileges.
       security:
@@ -50,7 +48,7 @@ paths:
   # This path represents a single brand resource, identified by its numeric ID
   /brands/{id}:
     put:
-      tags: [Brands]
+      tags: [Brands (Admin)]
       summary: Update an existing brand (Admin only)
       security:
         - BearerAuth: []
@@ -71,7 +69,7 @@ paths:
           description: Brand not found.
     
     delete:
-      tags: [Brands]
+      tags: [Brands (Admin)]
       summary: Delete a brand (Admin only)
       security:
         - BearerAuth: []
