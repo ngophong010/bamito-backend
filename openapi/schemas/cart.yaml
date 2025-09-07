@@ -1,5 +1,3 @@
-# /docs/schemas/cart.yaml
-
 # The object the client sends to add/update a cart item
 CartItemInput:
   type: object
