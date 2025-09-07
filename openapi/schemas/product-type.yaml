@@ -1,44 +1,42 @@
-components:
-  schemas:
-    # The full ProductType object returned by the API
-    ProductType:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        productTypeId:
-          type: string
-          example: "RACKET"
-        productTypeName:
-          type: string
-          example: "Vợt cầu lông"
-    
-    # The object the client sends to create or update a ProductType
-    ProductTypeInput:
-      type: object
-      properties:
-        productTypeId:
-          type: string
-          example: "RACKET"
-        productTypeName:
-          type: string
-          example: "Vợt cầu lông"
-      required:
-        - productTypeId
-        - productTypeName
-    
-    # The shape of the response for the paginated GET endpoint
-    PaginatedProductTypes:
-      type: object
-      properties:
-        totalItems:
-          type: integer
-        totalPages:
-          type: integer
-        currentPage:
-          type: integer
-        productTypes:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProductType"
+# The full ProductType object returned by the API
+ProductType:
+  type: object
+  properties:
+    id:
+      type: integer
+      readOnly: true
+    productTypeId:
+      type: string
+      example: "RACKET"
+    productTypeName:
+      type: string
+      example: "Vợt cầu lông"
+
+# The object the client sends to create or update a ProductType
+ProductTypeInput:
+  type: object
+  properties:
+    productTypeId:
+      type: string
+      example: "RACKET"
+    productTypeName:
+      type: string
+      example: "Vợt cầu lông"
+  required:
+    - productTypeId
+    - productTypeName
+
+# The shape of the response for the paginated GET endpoint
+PaginatedProductTypes:
+  type: object
+  properties:
+    totalItems:
+      type: integer
+    totalPages:
+      type: integer
+    currentPage:
+      type: integer
+    productTypes:
+      type: array
+      items:
+        $ref: "#/components/schemas/ProductType"
