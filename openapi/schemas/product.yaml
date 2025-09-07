@@ -1,5 +1,3 @@
-# /docs/schemas/product.yaml
-
 # ===============================================================
 #  INPUT SCHEMA (What the client SENDS to the API)
 # ===============================================================
@@ -75,7 +73,7 @@ ProductSummary:
     brandData:
       $ref: './brand.yaml#/Brand' # Reuses our existing Brand schema
     productTypeData:
-      $ref: './productType.yaml#/ProductType' # Assumes you create a productType.yaml
+      $ref: './product-type.yaml#/ProductType' # Assumes you create a productType.yaml
 
 # --- The detailed view, used for the product detail page ---
 ProductDetail:
