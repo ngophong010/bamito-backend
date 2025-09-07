@@ -1,5 +1,3 @@
-# /docs/components/parameters.yaml
-
 # --- Path Parameters ---
 id:
   name: id
@@ -20,6 +18,14 @@ productId:
     example: 'VCL-YNX-100ZZ'
 
 # ... and so on for other path parameters like productTypeId, etc.
+productTypeId:
+  name: productTypeId
+  in: path
+  required: true
+  description: The numeric primary key of the product type (category).
+  schema:
+    type: integer
+    example: 1
 
 # --- Query Parameters ---
 limit:
