@@ -11,6 +11,8 @@ export const validateEnv = () => {
     'DB_USERNAME',
     'DB_PASSWORD',
     'DB_DATABASE',
+    'ACCESS_KEY',
+    'REFRESH_KEY'
   ];
 
   for (const variable of requiredEnv) {
