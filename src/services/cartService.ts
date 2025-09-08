@@ -1,7 +1,10 @@
-import db from "../models/index.js";
 import { v4 as uuidv4 } from "uuid";
-import type { ServiceResponse } from "../types/serviceResponse.js";
+import db from "../models/index.js";
 import { Sequelize, Op } from "sequelize";
+
+import type { ServiceResponse } from "../types/serviceResponse.js";
+import type { EnrichedCart } from "../types/shared.js"
+
 import size from "../models/size.js";
 
 interface CartItemData {
@@ -90,15 +93,13 @@ const getAllProductCartService = async(userId: number): Promise<ServiceResponse>
 
   const cart = await db.Cart.findOne({
     where: { userId },
-    // Fetch all associated cart details
     include: [{
       model: db.Cart_Detail,
       as: "cartDetails",
-      // For each detail, include all its related data in one go
       include: [
         {
           model: db.Product,
-          as: "productData", // Use the correct alias from your CartDetail model
+          as: "productData",
           attributes: ["productId", "name", "image", "price", "discount"],
           include: [{
               model: db.ProductType,
@@ -106,39 +107,29 @@ const getAllProductCartService = async(userId: number): Promise<ServiceResponse>
               attributes: ["productTypeName"]
           }]
         },
-        {
-          model: db.Size,
-          as: "sizeData",
-          attributes: ["sizeId", "sizeName"],
-        },
-        // We can even get the available stock right here!
-        {
-          model: db.ProductSize,
-          as: "stockData",
-          attributes: ["quantity"]
-        }
+        { model: db.Size, as: "sizeData", attributes: ["sizeId", "sizeName"] },
+        { model: db.ProductSize, as: "stockData", attributes: ["quantity"] }
       ]
     }],
     order: [[{ model: db.Cart_Detail, as: 'cartDetails' }, 'createdAt', 'DESC']]
-  });
+  }) as EnrichedCart | null; // <-- THE TYPE ASSERTION
 
   if (!cart) {
-    // User exists but has never added an item to a cart
-    return { errCode: 0, data: { products: [], totalProduct: 0 }, message: "Gio hang trong" };
+    return { errCode: 0, data: { products: [], totalProduct: 0 }, message: "Cart is empty" };
   }
 
   const formattedProducts = cart.cartDetails.map(detail => ({
     productId: detail.productData.productId,
-    productTypeId: detail.productData.productTypeData.productTypeName,
+    productTypeName: detail.productData.productTypeData.productTypeName, 
     name: detail.productData.name,
     image: detail.productData.image,
     sizeId: detail.sizeData.sizeId,
     sizeName: detail.sizeData.sizeName,
     price: detail.productData.price,
     discount: detail.productData.discount,
-    quantity: detail.quantity, // User's desired quantity
+    quantity: detail.quantity,
     totalPrice: detail.totalPrice,
-    quantitySize: detail.stockData?.quantity || 0, // Available stock
+    quantitySize: detail.stockData?.quantity || 0,
   }));
 
   return {
