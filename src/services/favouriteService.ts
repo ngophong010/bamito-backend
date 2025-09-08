@@ -1,6 +1,6 @@
 import { Sequelize} from "sequelize";
 import db from "../models/index.js";
-import { Favourite } from "../models/favourite.js";
+
 import type { ServiceResponse } from "../types/serviceResponse.js";
 import type {  FavouriteWithProduct, ProductWithRatingAttributes } from "../types/shared.js";
 
