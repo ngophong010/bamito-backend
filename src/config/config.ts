@@ -1,17 +1,20 @@
-// Define your types as before - they are perfect.
+import type { Dialect, PoolOptions } from "sequelize";
+
 type DbConfig = {
-  username?: string;
+  username: string;
   password?: string | null;
-  database?: string;
-  host?: string;
-  port?: number;
-  dialect?: string;
+  database: string;
+  host: string;
+  port: number;
+  // FIX 1: Use the specific 'Dialect' type instead of a generic 'string'.
+  dialect: Dialect;
   dialectOptions?: {
     ssl?: {
       require: boolean;
       rejectUnauthorized: boolean;
     };
   };
+  pool?: PoolOptions; // Add the 'pool' property for production use
 };
 
 type AppConfig = {
@@ -53,6 +56,12 @@ const config: AppConfig = {
         rejectUnauthorized: false, // This may be needed for some cloud providers
       },
     },
+    pool: {
+      max: 10,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
   },
 };
 
