@@ -74,8 +74,8 @@ const handleGetAllProductSize = asyncHandler(async (req: Request, res: Response)
 });
 
 export {
-  handleCreateNewProductSize,
-  handleDeleteProductSize,
-  handleUpdateProductSize,
   handleGetAllProductSize,
+  handleCreateNewProductSize,
+  handleUpdateProductSize,
+  handleDeleteProductSize,
 };
