@@ -1,7 +1,8 @@
 import db from "../models/index.js";
 import { Op } from "sequelize";
-import type { ServiceResponse } from "../types/serviceResponse.js";
 import { v2 as cloudinary } from 'cloudinary';
+
+import type { ServiceResponse } from "../types/serviceResponse.js";
 
 // Define the shape of the voucher data for type safety
 interface VoucherData {
