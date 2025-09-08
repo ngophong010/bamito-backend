@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 import dotenv from 'dotenv';
 
@@ -23,16 +22,24 @@ interface CloudinaryParams {
   folder: string;
 }
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary, // Pass the configured instance
-  params: {
-    folder: "Badminton",
-  } as CloudinaryParams, // Cast to our interface for strictness
-});
+// 1. Use Multer's MemoryStorage engine.
+// This tells Multer to store the file as a Buffer in memory (req.file.buffer).
+const storage = multer.memoryStorage()
 
+// 2. Optional: Create a file filter to validate the file type on the server.
+const fileFilter = (req: any, file: any, cb: any) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true); // Accept the file
+  } else {
+    // Reject the file and provide a specific error message
+    cb(new Error('File type not supported! Please upload an image.'), false);
+  }
+};
+
+// 3. Create the final Multer middleware instance.
 const uploadImage = multer({
   storage: storage,
-  // Optional: Add file size limits, etc.
+  fileFilter: fileFilter,
   limits: {
     fileSize: 1024 * 1024 * 5 // 5 MB file size limit
   }
