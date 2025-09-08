@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import type { SignOptions, Secret } from "jsonwebtoken";
 import dotenv from 'dotenv';
 import type { ServiceResponse } from "../types/serviceResponse.js";
 
@@ -11,10 +12,10 @@ interface JwtPayload {
 }
 
 // ENHANCEMENT 3: "Fail-Fast" check for essential environment variables.
-const ACCESS_KEY = process.env.ACCESS_KEY;
-const REFRESH_KEY = process.env.REFRESH_KEY;
-const ACCESS_TIME = process.env.ACCESS_TIME || '1h'; // Provide a sensible default
-const REFRESH_TIME = process.env.REFRESH_TIME || '30d';
+const ACCESS_KEY = process.env.ACCESS_KEY as Secret;
+const REFRESH_KEY = process.env.REFRESH_KEY as Secret;
+const ACCESS_TIME = process.env.ACCESS_TIME || "15m"; // Provide a sensible default
+const REFRESH_TIME = process.env.REFRESH_TIME || "30d";
 
 if (!ACCESS_KEY || !REFRESH_KEY) {
   throw new Error("FATAL ERROR: JWT secret keys are not defined in environment variables.");
@@ -24,12 +25,18 @@ if (!ACCESS_KEY || !REFRESH_KEY) {
 
 // Note: These functions are no longer async because jwt.sign is synchronous.
 export const generalAccessToken = (payload: JwtPayload): string => {
-  const accessToken = jwt.sign(payload, ACCESS_KEY, { expiresIn: ACCESS_TIME });
+  const accessToken = jwt.sign(
+    payload, ACCESS_KEY, {
+    expiresIn: ACCESS_TIME,
+  } as SignOptions);
   return accessToken;
 };
 
 export const generalRefreshToken = (payload: JwtPayload): string => {
-  const refreshToken = jwt.sign(payload, REFRESH_KEY, { expiresIn: REFRESH_TIME });
+  // This is now fully type-safe and error-free
+  const refreshToken = jwt.sign(payload, REFRESH_KEY, {
+    expiresIn: REFRESH_TIME,
+  } as SignOptions);
   return refreshToken;
 };
 
