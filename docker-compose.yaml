@@ -1,0 +1,43 @@
+# This file defines your entire development environment: the database and the app.
+version: '3.8'
+
+services:
+  # This is the service for your PostgreSQL database
+  db:
+    image: postgres:15 # Use a specific, official version of PostgreSQL
+    container_name: bamito_db
+    restart: always
+    environment:
+      # These variables create the database and user inside the container.
+      # Docker Compose automatically reads your .env file and injects these values.
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      # This maps the port inside the container (5432) to a port on your
+      # local machine (5432), so you can connect with a GUI tool.
+      - "5432:5432"
+    volumes:
+      # This is the most important part. It creates a persistent "volume" named
+      # 'postgres_data' and mounts it inside the container. This ensures that
+      # even if you stop and remove the container, your data is safe.
+      - postgres_data:/var/lib/postgresql/data
+
+  # This is the service for your Express.js application
+  app:
+    container_name: bamito_app
+    build: . # Tells Docker to build an image from the Dockerfile in this directory
+    ports:
+      - "${PORT}:${PORT}" # Maps your app's port to your local machine
+    environment:
+      # We need to change the DB_HOST to point to the database service name
+      DB_HOST: db
+    depends_on:
+      - db # Tells Docker to start the 'db' service before starting the 'app' service
+    volumes:
+      # Mounts your source code into the container for live reloading with nodemon
+      - ./src:/app/src
+
+# This defines the named volume for the database to ensure data persistence.
+volumes:
+  postgres_data:
