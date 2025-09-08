@@ -3,7 +3,7 @@ import type { Optional, HasManyGetAssociationsMixin, BelongsToGetAssociationMixi
 import type { Role } from "./role.js";
 import type { Order } from "./order.js";
 import type { Models } from "./index.js";
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 interface UserAttributes {
   id: number;
