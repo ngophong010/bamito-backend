@@ -1,6 +1,6 @@
-import db, {sequelize} from "../models/index.js";
 import {Op} from "sequelize";
 import { v4 as uuidv4 } from "uuid";
+import db, {sequelize} from "../models/index.js";
 import type { ServiceResponse } from "../types/serviceResponse.js";
 
 interface OrderData {
