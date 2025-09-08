@@ -6,7 +6,8 @@ import * as brandService from "../services/brandService.js";
 const handleCreateNewBrand = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-     return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
   
   const message = await brandService.createNewBrandService(req.body);
@@ -17,7 +18,8 @@ const handleCreateNewBrand = asyncHandler(async (req: Request, res: Response) =>
 const handleGetAllBrand = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-     return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
   
   const limit = Number(req.query.limit) || 10;
@@ -40,7 +42,8 @@ const handleGetAllBrand = asyncHandler(async (req: Request, res: Response) => {
 const handleUpdateBrand = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-     return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
   
   const message = await brandService.updateBrandService(req.body);
@@ -50,7 +53,8 @@ const handleUpdateBrand = asyncHandler(async (req: Request, res: Response) => {
 const handleDeleteBrand = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-     return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
   
   const id = req.query.id as string;
