@@ -1,5 +1,4 @@
 import db, { sequelize } from "../models/index.js";
-import bcrypt from "bcryptjs";
 import { Op } from "sequelize";
 import { v4 as uuidv4 } from "uuid";
 import twilio from "twilio";
@@ -8,7 +7,7 @@ import dotenv from 'dotenv';
 import { cloudinaryConfig } from '../config/env.js';
 
 import type { ServiceResponse } from "../types/serviceResponse.js";
-import * as emailService from "./emailService.js"; // Use consistent ESM imports
+import * as emailService from "./emailService.js";
 import { generalAccessToken, generalRefreshToken } from "./jwtService.js";
 // Initialize Twilio client correctly
 dotenv.config();
