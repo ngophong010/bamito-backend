@@ -6,7 +6,6 @@ import type { FilterOptions, ProductWithRating, ProductWithRatingAttributes, Unr
 
 import { Product } from "../models/product.js";
 
-
 interface ProductData {
   id?: number;
   productId: string;
@@ -151,10 +150,10 @@ const getAllProductService = async (limit?: number, page?: number, sort?: string
 
 const getAllProductOfTheProductTypeService = async(
   productTypeId: number,
-  limit: number,
-  page: number,
-  sort: string,
-  filter: FilterOptions
+  limit?: number,
+  page?: number,
+  sort?: string,
+  filter?: FilterOptions
 ): Promise<ServiceResponse> => {
   if (!productTypeId) {
     return { errCode: 1, message: "Missing required productTypeId parameter!" };
