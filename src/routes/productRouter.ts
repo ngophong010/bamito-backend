@@ -40,7 +40,7 @@ router.get(
 router.get(
   "/:productId", // Using the business key for public, SEO-friendly URLs
   [param('productId').isString().notEmpty()],
-  productController.getProduct
+  productController.handleGetProduct
 );
 
 router.get(
