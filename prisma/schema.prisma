@@ -1,0 +1,386 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  brandId   String   @unique
+  brandName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // We will add the relation to products here later
+  products  Product[]
+
+  @@map("brands") // This line explicitly maps to the "brands" table
+}
+
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  cartId     Int
+  productId  Int
+  sizeId     Int
+  quantity   Int      @default(1)
+  totalPrice Int
+
+  // --- Relations ---
+  // A CartItem belongs to exactly one Cart
+  cart       Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // A CartItem refers to exactly one Product
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // A CartItem refers to exactly one Size
+  size       Size     @relation(fields: [sizeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  // --- Timestamps ---
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // This creates the composite unique constraint
+  @@unique([cartId, productId, sizeId], name: "unique_cart_product_size_constraint")
+
+  // This maps the model to the "cart_details" table
+  @@map("cart_details")
+}
+
+model Cart {
+  id     Int    @id @default(autoincrement())
+  cartId String @unique // The business-logic unique identifier
+  userId Int
+
+  // --- Relations ---
+  // A Cart belongs to exactly one User.
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // A Cart can contain many CartItem items.
+  // This back-relation is needed for the CartItem model we created earlier.
+  items  CartItem[]
+
+  // --- Timestamps ---
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Mapping ---
+  // Maps this model to the "carts" table in the database
+  @@map("carts")
+}
+
+model DeliveryAddress {
+  id           Int     @id @default(autoincrement())
+  userId       Int
+  isDefault    Boolean @default(false)
+
+  // Structured Address Fields
+  receiverName String  // Who is receiving the package
+  phone        String
+  streetLine1  String  // e.g., "123 Main St"
+  streetLine2  String? // e.g., "Apt 4B"
+  city         String
+  state        String? // State / Province / Region
+  postalCode   String
+  country      String
+
+  // --- Relations ---
+  // A DeliveryAddress belongs to exactly one User.
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // --- Timestamps ---
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Mapping ---
+  @@map("delivery_addresses")
+}
+
+model Favourite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+
+  // --- Relations ---
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  // --- Timestamps ---
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Constraints & Mapping ---
+  // This enforces the "one favourite per user per product" rule
+  @@unique([userId, productId], name: "unique_user_product_favourite_constraint")
+  @@map("favourites")
+}
+
+model Feedback {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  productId   Int
+  description String? // The '?' makes this field optional (nullable), mapping to TEXT
+  rating      Int
+
+  // --- Relations ---
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // --- Timestamps ---
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // --- Constraints & Mapping ---
+  // This enforces the "one feedback per user per product" rule
+  @@unique([userId, productId], name: "unique_user_product_feedback_constraint")
+  @@map("feedbacks")
+}
+
+model OrderItem {
+  id             Int      @id @default(autoincrement())
+  orderId        Int
+  productId      Int
+  sizeId         Int
+
+  quantity       Int
+  price          Int      // Price PER ITEM at the time of purchase
+  discount       Int      // Discount PER ITEM at the time of purchase
+  productName    String   // Snapshot of the product name
+  productImage   String   // Snapshot of the product image
+  sizeName       String   // Snapshot of the size name
+  status         Int
+  
+  statusFeedback Int      @default(0) // 0 = not reviewed, 1 = reviewed
+
+  // --- Relations ---
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  size           Size     @relation(fields: [sizeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // --- Timestamps ---
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // --- Constraints & Mapping ---
+  // Enforces "one unique product/size combination per order"
+  @@unique([orderId, productId, sizeId], name: "unique_order_product_size_constraint")
+  @@map("order_histories")
+}
+
+model Order {
+  id              Int     @id @default(autoincrement())
+  orderId         String  @unique
+  userId          Int
+  voucherId       Int? // The '?' makes this field optional (nullable)
+  totalPrice      Int
+  payment         String
+  deliveryAddress String // Prisma's String type handles TEXT
+  status          Int     @default(0) // 0: Pending, 1: Confirmed, 2: Shipped, 3: Delivered
+
+  // --- Relations ---
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  // The voucher relation with onDelete: SetNull
+  voucher         Voucher? @relation(fields: [voucherId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  // Back-relation to the order line items
+  items           OrderItem[]
+
+  // --- Timestamps ---
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // --- Mapping ---
+  @@map("orders")
+}
+
+model Inventory {
+  id        Int @id @default(autoincrement())
+  productId Int
+  sizeId    Int
+  quantity  Int
+  sold      Int @default(0)
+
+  // --- Relations ---
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  size      Size    @relation(fields: [sizeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // --- Timestamps ---
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Constraints & Mapping ---
+  // Enforces that there can only be one inventory entry per product/size combo
+  @@unique([productId, sizeId], name: "unique_product_size_constraint")
+  @@map("product_sizes")
+}
+
+model Category {
+  id              Int      @id @default(autoincrement())
+  categoryId   String   @unique
+  categoryName String   @unique // Category names should also be unique
+
+  // --- Relation ---
+  // A category can be applied to many Products.
+  products        Product[]
+
+  sizes Size[]
+
+  // --- Timestamps ---
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // --- Mapping ---
+  @@map("product_types")
+}
+
+model Product {
+  id                 Int      @id @default(autoincrement())
+  productId          String   @unique
+  categoryId      Int
+  brandId            Int
+  name               String
+  image              String?
+  imageId            String?
+  price              Int
+  discount           Int?     @default(0)
+  rating             Int?     @default(0)
+  descriptionContent String? // Prisma String maps to TEXT
+  descriptionHTML    String? // Prisma String maps to TEXT
+
+  // --- Direct Relations (Belongs to) ---
+  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  brand              Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // --- Back-relations (Has many) ---
+  // A Product has inventory information across many sizes.
+  inventory          Inventory[]
+
+  // A Product can be in many different order history items.
+  orderItems         OrderItem[]
+
+  // A Product can be in many CartItem items.
+  cartItems          CartItem[]
+
+  // A Product can be favourited by many users.
+  favouritedBy       Favourite[]
+
+  // A Product can receive many Feedbacks.
+  feedbacks          Feedback[]
+
+  // --- Timestamps ---
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // --- Mapping ---
+  @@map("products")
+}
+
+model Role {
+  id       Int      @id @default(autoincrement())
+  roleId   String   @unique // Business key, e.g., 'R1', 'ADMIN'
+  roleName String   // Display name, e.g., 'Administrator'
+
+  // --- Relation ---
+  // A Role can be assigned to many Users.
+  users    User[]
+
+  // --- Timestamps ---
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Mapping ---
+  @@map("roles")
+}
+
+model Size {
+  id            Int      @id @default(autoincrement())
+  sizeId        String   @unique
+  categoryId Int
+  sizeName      String
+
+  // --- Relations ---
+  // A Size belongs to a specific category.
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  // A Size is available for many different products (via the Inventory join table).
+  products      Inventory[]
+  
+  // A Size can be part of many different cart detail items.
+  cartItems     CartItem[]
+  
+  // A Size can be part of many different order history items.
+  orderItems    OrderItem[]
+
+  // --- Timestamps ---
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([categoryId, sizeName])
+  
+  // --- Mapping ---
+  @@map("sizes")
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  userName        String
+  password        String
+  email           String    @unique
+  avatar          String?
+  avatarId        String?
+  phoneNumber     String?
+  birthday        DateTime? // Prisma uses DateTime for DATEONLY. The time part should be ignored in your application.
+  otpCode         String?
+  timeOtp         DateTime? // Corresponds to Sequelize.DATE for timestamps
+  roleId          Int
+  tokenRegister   String?
+  status          Int       @default(0)
+
+  // --- Direct Relation (Belongs to) ---
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // --- Back-relations (Has many) ---
+  orders            Order[]
+  carts             Cart[]
+  deliveryAddresses DeliveryAddress[]
+  favourites        Favourite[]
+  feedbacks         Feedback[]
+  
+  // --- Timestamps ---
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // --- Mapping ---
+  @@map("users")
+}
+
+model Voucher {
+  id           Int       @id @default(autoincrement())
+  voucherId    String    @unique
+  image        String?
+  imageId      String?
+  voucherPrice Int
+  quantity     Int
+  timeStart    DateTime // Corresponds to Sequelize.DATE
+  timeEnd      DateTime // Corresponds to Sequelize.DATE
+
+  // --- Relation ---
+  // A Voucher can be applied to many Orders.
+  orders       Order[]
+
+  // --- Timestamps ---
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // --- Mapping ---
+  @@map("vouchers")
+}
