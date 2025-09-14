@@ -173,9 +173,9 @@ const handleGetAllFeedBack = asyncHandler(async (req: Request, res: Response) =>
   res.status(message.errCode === 0 ? 200 : 400).json(message);
 });
 
-const handleGetAllProductSaleOff = asyncHandler(async (req: Request, res: Response) => {
+const handlegetAllProductsOnSale = asyncHandler(async (req: Request, res: Response) => {
     const { limit, page } = req.query;
-    const message = await productService.getAllProductSaleOffService(
+    const message = await productService.getAllProductsOnSaleService(
         Number(limit) || undefined,
         Number(page) || undefined,
     );
@@ -207,6 +207,6 @@ export {
   handleGetAllProduct,
   handleGetAllProductOfTheProductType,
   handleGetAllFeedBack,
-  handleGetAllProductSaleOff,
+  handlegetAllProductsOnSale,
   handleGetAllUserFavourites,
 };

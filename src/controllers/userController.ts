@@ -1,14 +1,9 @@
 import type { Request, Response } from "express";
 import { validationResult } from 'express-validator';
 import asyncHandler from "express-async-handler";
+import { v2 as cloudinary } from 'cloudinary'; // Modern import for cloudinary
 
 import * as userService from "../services/userService.js";
-import * as emailService from "../services/emailService.js"
-import type { ServiceResponse } from "../types/serviceResponse.js";
-import { v2 as cloudinary } from 'cloudinary'; // Modern import for cloudinary
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 // --- USER INFORMATION ---
 
