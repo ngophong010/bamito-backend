@@ -1,43 +1,52 @@
 import express from "express";
+import { Router } from 'express';
 
-import userRouter from "./userRouter.js";
-import productRouter from "./productRouter.js";
-import productTypeRouter from "./productTypeRouter.js";
-import brandRouter from "./brandRouter.js";
-import favouriteRouter from "./favouriteRouter.js";
-import sizeRouter from "./sizeRouter.js";
-import voucherRouter from "./voucherRouter.js";
-import productSizeRouter from "./productSizeRouter.js";
-import feedBackRouter from "./feedBackRouter.js";
-import cartRouter from "./cartRouter.js";
-import orderRouter from "./orderRouter.js";
+import authRoutes from '../modules/auth/auth.routes.js';
+import userRoutes from '../modules/user/user.routes.js';
+import productRoutes from '../modules/product/product.routes.js';
+import categoryRoutes from '../modules/category/category.routes.js';
+import brandRoutes from '../modules/brand/brand.routes.js';
+import sizeRoutes from '../modules/size/size.routes.js';
+import inventoryRoutes from '../modules/inventory/inventory.routes.js';
+import voucherRoutes from '../modules/voucher/voucher.routes.js';
+import feedbackRoutes from '../modules/feedback/feedback.routes.js';
+import { profileRouter as addressProfileRoutes, addressRouter } from '../modules/address/deliveryAddress.routes.js';
+import cartRoutes from '../modules/cart/cart.routes.js';
+import orderRoutes from '../modules/order/order.routes.js';
+import paymentRoutes from '../modules/payment/payment.routes.js';
 
-const apiRouter = express.Router();
+// --- Initialize the v1 router ---
+const v1Router = Router();
 
-// --- ENHANCEMENT 2: Add any middleware that should apply to ALL API routes ---
-// This simple logger will run for every single API request, which is great for debugging.
-apiRouter.use((req, res, next) => {
-  console.log(`[API] Request received: ${req.method} ${req.originalUrl}`);
-  next();
-});
+// ===============================================================
+// --- MOUNT ALL THE ROUTERS ---
+// ===============================================================
+// This is the "switchboard" for your entire API.
 
-// --- ENHANCEMENT 1: Create a versioned router ---
-const v1Router = express.Router();
+// --- Authentication & Profile Routes ---
+v1Router.use('/auth', authRoutes);                   // For login, register, password reset, etc.
+v1Router.use('/profile/cart', cartRoutes);           // For the logged-in user's cart
+v1Router.use('/profile/addresses', addressProfileRoutes); // For the logged-in user's address book
 
-// Mount all your resource routers onto the v1Router
-v1Router.use("/users", userRouter); // Best practice: use plural resource names
-v1Router.use("/product-types", productTypeRouter);
-v1Router.use("/products", productRouter);
-v1Router.use("/brands", brandRouter);
-v1Router.use("/favourites", favouriteRouter);
-v1Router.use("/sizes", sizeRouter);
-v1Router.use("/vouchers", voucherRouter);
-v1Router.use("/product-sizes", productSizeRouter);
-v1Router.use("/feedback", feedBackRouter);
-v1Router.use("/cart", cartRouter);
-v1Router.use("/orders", orderRouter);
+// --- Product Catalog Routes ---
+v1Router.use('/products', productRoutes);            // Includes nested /:productId/inventory and /:productId/feedback
+v1Router.use('/categories', categoryRoutes);         // Formerly product-types
+v1Router.use('/brands', brandRoutes);
+v1Router.use('/sizes', sizeRoutes);
+v1Router.use('/vouchers', voucherRoutes);
 
-// Mount the versioned router onto the main apiRouter
-apiRouter.use("/v1", v1Router);
+// --- Direct Resource Management Routes (Mostly for Admins) ---
+v1Router.use('/users', userRoutes);                  // For admins to manage all users
+v1Router.use('/orders', orderRoutes);                // For admins to manage all orders
+v1Router.use('/inventory', inventoryRoutes);         // For admins to directly update/delete inventory entries
+v1Router.use('/feedback', feedbackRoutes);           // For admins/owners to update/delete specific feedback
+v1Router.use('/addresses', addressRouter);           // For owners to update/delete a specific address
+
+// --- Payment Gateway Routes ---
+v1Router.use('/payment', paymentRoutes);
+
+// The main router for the entire API now just uses the versioned router.
+const apiRouter = Router();
+apiRouter.use('/v1', v1Router);
 
 export default apiRouter;
