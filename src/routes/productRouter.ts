@@ -3,8 +3,8 @@ import { body, query, param } from 'express-validator';
 
 import * as productController from "../controllers/productController.js";
 import * as feedbackController from "../controllers/feedBackController.js"; // Feedback logic is separate
-import { protect, isAdmin } from "../middlewares/auth.js";
-import { uploadImage } from "../middlewares/uploadImage.js";
+import { protect, isAdmin } from "../middleware/auth.js";
+import { uploadImage } from "../middleware/uploadImage.js";
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ const paginationValidation = [
 // ===============================================================
 
 router.get("/", paginationValidation, productController.handleGetAllProduct);
-router.get("/sale-off", paginationValidation, productController.handleGetAllProductSaleOff);
+router.get("/sale-off", paginationValidation, productController.handlegetAllProductsOnSale);
 
 router.get(
   "/types/:productTypeId",

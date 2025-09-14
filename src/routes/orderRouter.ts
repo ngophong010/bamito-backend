@@ -1,7 +1,7 @@
 import express from "express";
 import { body, query, param } from 'express-validator';
 import * as orderController from "../controllers/orderController.js";
-import { protect, isAdmin, isOrderOwnerOrAdmin } from "../middlewares/auth.js";
+import { protect, isAdmin, isOrderOwnerOrAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 

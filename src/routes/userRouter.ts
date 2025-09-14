@@ -3,8 +3,8 @@ import { body, query, param } from 'express-validator';
 import rateLimit from "express-rate-limit";
 
 import * as userController from "../controllers/userController.js";
-import { protect, isAdmin, isOwnerOrAdmin } from "../middlewares/auth.js";
-import { uploadImage } from "../middlewares/uploadImage.js";
+import { protect, isAdmin, isOwnerOrAdmin } from "../middleware/auth.js";
+import { uploadImage } from "../middleware/uploadImage.js";
 
 const router = express.Router();
 

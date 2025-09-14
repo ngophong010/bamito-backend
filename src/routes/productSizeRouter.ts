@@ -2,7 +2,7 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as productSizeController from "../controllers/productSizeController.js";
-import { protect, isAdmin } from "../middlewares/auth.js";
+import { protect, isAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 

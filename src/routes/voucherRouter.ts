@@ -2,8 +2,8 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as voucherController from "../controllers/voucherController.js";
-import { protect, isAdmin } from "../middlewares/auth.js";
-import { uploadImage } from "../middlewares/uploadImage.js";
+import { protect, isAdmin } from "../middleware/auth.js";
+import { uploadImage } from "../middleware/uploadImage.js";
 
 const router = express.Router();
 
