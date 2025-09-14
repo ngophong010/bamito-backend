@@ -21,7 +21,7 @@
     "jsx": "preserve",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
+
     "moduleDetection": "auto",
     "skipLibCheck": true
   },
