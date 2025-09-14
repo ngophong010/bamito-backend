@@ -1,21 +1,54 @@
 import express from "express";
-import type {Application, Request, Response, NextFunction} from "express";
-
 import cookieParser from "cookie-parser";
-import apiRouter from "./routes/index.js";
-import {connectDB} from "./config/connectDB.js";
 import cors from "cors";
-import type {CorsOptions} from "cors";
-import dotenv from "dotenv";
+import morgan from 'morgan';
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import dotenv from "dotenv";
+
+import type {Application, Request, Response, NextFunction} from "express";
+import type {CorsOptions} from "cors";
+
 import { validateEnv } from "./config/env.js";
+import apiRouter from "./routes/index.js";
+import {connectDB} from "./config/connectDB.js";
+import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
 
 const requiredEnv = [
-  'DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_DATABASE',
-  'ACCESS_KEY', 'REFRESH_KEY', 'CLOUDINARY_CLOUD_NAME', // Add ALL essential variables
+  // --- DATABASE (POSTGRESQL) ---
+  'DB_HOST',
+  'DB_PORT',
+  'DB_USERNAME',
+  'DB_PASSWORD',
+  'DB_DATABASE',
+  'DB_DIALECT',
+
+  // --- JWT SECRETS ---
+  'ACCESS_KEY',
+  'REFRESH_KEY',
+  'ACCESS_TIME',
+  'REFRESH_TIME',
+
+  // --- CLIENT URLS (for CORS) ---
+  'URL_CLIENT',
+  'URL_CLIENT_MANAGEMENT',
+  'URL_SERVER',
+
+  // --- EXTERNAL SERVICES ---
+  'EMAIL_APP',
+  'EMAIL_APP_PASSWORD',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET',
+  'TWILIO_ACCOUNT_SID',
+  'TWILIO_AUTH_TOKEN',
+  'TWILIO_PHONE_NUMBER',
+  'VNP_TMNCODE',
+  'VNP_HASHSECRET',
+  'VNP_URL',
+  'VNP_RETURNURL'
 ];
 
 for (const variable of requiredEnv) {
@@ -28,56 +61,63 @@ for (const variable of requiredEnv) {
 validateEnv();
 const app: Application = express();
 
-// 1. Set security HTTP headers
+// ===============================================================
+// --- GLOBAL APPLICATION-LEVEL MIDDLEWARE ---
+// ===============================================================
+
+// Trust proxy headers (useful if you are behind a load balancer like Nginx or Heroku)
+app.set('trust proxy', 1);
+
+// Set security HTTP headers
 app.use(helmet());
 
-// 2. Configure CORS
-const corsOptions: CorsOptions = {
-  origin: [process.env.URL_CLIENT, process.env.URL_CLIENT_MANAGEMENT],
+// Configure CORS
+const corsOptions = {
+  origin: process.env.CLIENT_ORIGIN, // Use the single variable from our previous step
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
 };
 app.use(cors(corsOptions));
 
-// 3. Parse cookies
-app.use(cookieParser());
+// Request logging (use 'combined' for production logging)
+const logFormat = process.env.NODE_ENV === 'development' ? 'dev' : 'combined';
+app.use(morgan(logFormat));
 
-// 4. Replace body parser with express's built-in parsers
-// Use a reasonable payload limit to prevent DoS attacks
-app.use(express.json({ limit: "500kb" }));
-app.use(express.urlencoded({ limit: "500kb", extended: true }));
-
-// --- SECURITY MIDDLEWARES ---
-
-// 5. General rate limiting for all API requests
+// General rate limiting to prevent abuse
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-app.use('/api', limiter);
+app.use(limiter);
 
-// 6. Mount the master router for all API endpoints
+// Body and cookie parsers
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// ===============================================================
+// --- API ROUTES ---
+// ===============================================================
+
+// Mount the master router for all API endpoints under a versioned namespace
 app.use("/api", apiRouter);
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
-  // res.status(500).send("Something broke!");
+// ===============================================================
+// --- ERROR HANDLING ---
+// ===============================================================
 
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  const message = err.message || "Internal Server Error";
-
-  res.status(statusCode).json({
-    status: 'error',
-    message: message,
-    // Only include the stack trace in development mode
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-  });
+// Handle 404 Not Found for any API routes not matched above
+app.use("/api/*", (req, res) => {
+  res.status(404).json({ message: "API endpoint not found." });
 });
 
-// --- DATABASE & SERVER STARTUP ---
+// The Global Error Handler (must be the last middleware)
+app.use(errorHandler);
 
+// ===============================================================
+// --- SERVER STARTUP ---
+// ===============================================================
 const port = process.env.PORT || 8080;
 
 const startServer = async () => {
