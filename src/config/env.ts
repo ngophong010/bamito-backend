@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-dotenv.config();
 
 // This function checks for all required environment variables at startup.
 export const validateEnv = () => {
@@ -13,6 +12,7 @@ export const validateEnv = () => {
     'DB_DATABASE',
     'ACCESS_KEY',
     'REFRESH_KEY'
+    
   ];
 
   for (const variable of requiredEnv) {
