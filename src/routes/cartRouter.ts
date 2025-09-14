@@ -2,7 +2,7 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as cartController from "../controllers/cartController.js";
-import { protect } from "../middlewares/auth.js"; 
+import { protect } from "../middleware/auth.js"; 
 
 const router = express.Router();
 

@@ -2,7 +2,7 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as favouriteController from "../controllers/favouriteController.js";
-import { protect, isOwnerOrAdmin } from "../middlewares/auth.js";
+import { protect, isOwnerOrAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 

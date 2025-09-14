@@ -2,7 +2,7 @@ import express from "express";
 import { body, query } from 'express-validator';
 
 import * as authController from "../controllers/authController.js"; // Or userController
-import { protect } from "../middlewares/auth.js";
+import { protect } from "../middleware/auth.js";
 import rateLimit from "express-rate-limit";
 
 const router = express.Router();

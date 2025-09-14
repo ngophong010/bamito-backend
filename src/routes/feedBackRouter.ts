@@ -2,7 +2,7 @@ import express from "express";
 import { body, query, param } from 'express-validator';
 
 import * as feedBackController from "../controllers/feedBackController.js";
-import { protect, isAdmin, isFeedbackOwnerOrAdmin } from "../middlewares/auth.js";
+import { protect, isAdmin, isFeedbackOwnerOrAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
