@@ -7,7 +7,6 @@ import { Favourite } from "../models/favourite.js";
 import { Cart } from "../models/cart.js";
 import { CartDetail } from "../models/cartDetail.js";
 
-
 export interface FilterOptions {
   brandId?: number[];
   price?: [number, number];
